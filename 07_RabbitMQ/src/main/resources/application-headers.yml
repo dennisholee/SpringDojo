@@ -1,0 +1,6 @@
+rabbitmq:
+  exchange:
+    type: exchange-headers
+  queues: 
+    baz: queue-headers-baz
+    foo: queue-headers-foo

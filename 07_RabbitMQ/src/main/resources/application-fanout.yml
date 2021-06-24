@@ -1,0 +1,6 @@
+rabbitmq:
+  exchange:
+    type: exchange-fanout
+  queues: 
+    baz: queue-fanout-baz
+    foo: queue-fanout-foo

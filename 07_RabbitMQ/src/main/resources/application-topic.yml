@@ -1,0 +1,6 @@
+rabbitmq:
+  exchange:
+    type: exchange-topic
+  queues: 
+    baz: queue-topic-baz
+    foo: queue-topic-foo

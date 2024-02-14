@@ -1,0 +1,15 @@
+spring:
+  sql:
+    init.mode: ALWAYS
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: mysecretpassword
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    
+
+application:
+  channel: demochannel

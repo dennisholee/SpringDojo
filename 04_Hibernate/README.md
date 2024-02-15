@@ -123,7 +123,7 @@ curl http://localhost:8080/notify
 [{"id":"7f466511-a9a5-4f78-b3e4-7811922686d6","createDateTime":null,"modifyDateTime":null,"message":"foobar"}]
 ```
 
-The following Hibernate statistics indicates data is fetched from database.
+Prior to enabling cache query, the following Hibernate statistics indicates data is fetched from database.
 
 ```
 Hibernate: 
@@ -145,6 +145,22 @@ Hibernate:
     0 nanoseconds spent performing 0 L2C misses;
     0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
     4250 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+}
+```
+After enabling cache query, the following Hibernate statistics indicates data is fetched from level 2 cache.
+
+```
+2024-02-15T18:25:12.323+08:00  INFO 8003 --- [ctor-http-nio-3] i.StatisticalLoggingSessionEventListener : Session Metrics {
+    4338208 nanoseconds spent acquiring 1 JDBC connections;
+    0 nanoseconds spent releasing 0 JDBC connections;
+    0 nanoseconds spent preparing 0 JDBC statements;
+    0 nanoseconds spent executing 0 JDBC statements;
+    0 nanoseconds spent executing 0 JDBC batches;
+    0 nanoseconds spent performing 0 L2C puts;
+    19236042 nanoseconds spent performing 2 L2C hits;
+    0 nanoseconds spent performing 0 L2C misses;
+    0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+    10167 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
 }
 ```
 
@@ -173,7 +189,44 @@ The following Hibernate statistics indicates data is fetched from level 2 cache.
     0 nanoseconds spent executing 0 partial-flushes (flushing a total of 0 entities and 0 collections)
 ```
 
+## Performance Tuning
 
+##### Disable Auto-Commit
+
+To disable the auto-commit, update `application.yaml` as follows:
+
+```
+spring:
+  datasource:
+    hikari:
+      auto-commit: false
+  jpa:
+    properties:
+      hibernate:
+        connection:
+          provider_disables_autocommit: true
+```
+
+By disabling the auto-commit, the initial call to get the auto-commit status is prevented and therefore avoids the unnecessary acquisition of a JDBC connection.
+The following shows a query that has a level 2 cache hit but without acquiring the JDBC connection.
+
+```
+2024-02-15T21:06:09.714+08:00  INFO 17343 --- [ctor-http-nio-3] i.StatisticalLoggingSessionEventListener : Session Metrics {
+    0 nanoseconds spent acquiring 0 JDBC connections;
+    0 nanoseconds spent releasing 0 JDBC connections;
+    0 nanoseconds spent preparing 0 JDBC statements;
+    0 nanoseconds spent executing 0 JDBC statements;
+    0 nanoseconds spent executing 0 JDBC batches;
+    0 nanoseconds spent performing 0 L2C puts;
+    11766875 nanoseconds spent performing 2 L2C hits;
+    0 nanoseconds spent performing 0 L2C misses;
+    0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+    0 nanoseconds spent executing 0 partial-flushes (flushing a total of 0 entities and 0 collections)
+```
+
+## Miscellaneous
+
+##### Subscribe to PostGreSQL Notification
 
 At the PostGreSQL prompt, subscribe to channel
 

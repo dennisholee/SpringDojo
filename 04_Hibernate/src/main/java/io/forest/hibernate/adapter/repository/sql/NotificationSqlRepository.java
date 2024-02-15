@@ -3,9 +3,12 @@ package io.forest.hibernate.adapter.repository.sql;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.data.jpa.repository.QueryHints;
+
 import io.forest.hibernate.adapter.repository.sql.model.Notification;
 import io.forest.hibernate.port.dto.NotificationDto;
 import io.forest.hibernate.port.out.NotificationRepository;
+import jakarta.persistence.QueryHint;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import lombok.NonNull;

@@ -8,6 +8,8 @@ import io.forest.hibernate.common.ResponseStatus;
 import io.forest.hibernate.port.dto.NotificationDto;
 import io.forest.hibernate.port.out.NotificationRepository;
 import io.forest.hibernate.port.out.NotifierAdapter;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +25,7 @@ public class CreateMessageApplication {
 	@NonNull
 	NotificationRepository notificationRepository;
 
+	@Transactional(value = TxType.REQUIRED)
 	public Mono<NotificationDto> handleIncomingMessage(NotificationDto dto) {
 		log.info("Handle incoming message dto={}", dto);
 

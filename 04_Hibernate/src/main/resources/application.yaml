@@ -9,7 +9,47 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: create
-    
+    properties:
+      javax:
+        persistence:
+          sharedCache: 
+            #required - enable selective caching mode - only entities with @Cacheable annotation will use L2 cache.
+            mode: ENABLE_SELECTIVE 
+      hibernate:
+        #optional - enable SQL statements formatting.
+        format_sql: true 
+        #optional - generate statistics to check if L2/query cache is actually being used.
+        generate_statistics: true
+        cache:
+          #required - turn on L2 cache.
+          use_second_level_cache: true
+          #optional - turn on query cache.
+          use_query_cache: true 
+          region:
+            #required - classpath to cache region factory.
+            factory_class: org.redisson.hibernate.RedissonRegionFactory # org.hibernate.cache.jcache.internal.JCacheRegionFactory
+        #javax:
+        #  #cache:
+        #  missing_cache_strategy: create
+        #  cache:
+            provider: org.ehcache.jsr107.EhcacheCachingProvider
+      redisson-config: classpath:redisson.yaml
+
+#spring.jpa.properties:
+#  -hibernate.cache.region.factory_class: "org.hibernate.cache.jcache.internal.JCacheRegionFactory"
+#  -hibernate.cache.use_second_level_cache: true
+#  -hibernate.javax.cache.provider: "org.ehcache.jsr107.EhcacheCachingProvider"
+#  -hibernate.javax.missing_cache_strategy: fail
+#  -hibernate.javax.cache.uri: "classpath:ehcache.xml"
+#  -hibernate.generate_statistics: true
+#  -jakarta.persistence.sharedCache.mode: ENABLE_SELECTIVE
+
 
 application:
   channel: demochannel
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: trace

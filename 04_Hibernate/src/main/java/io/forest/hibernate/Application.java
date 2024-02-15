@@ -5,10 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import io.forest.hibernate.conf.AdapterConf;
 import io.forest.hibernate.conf.ApplicationConf;
 import io.forest.hibernate.conf.MessageAPIAdapter;
-import io.forest.hibernate.adapter.notification.db.SubscriberPostgresSQLAdapter;
-import io.forest.hibernate.conf.AdapterConf;
 
 @SpringBootApplication
 @EnableAsync

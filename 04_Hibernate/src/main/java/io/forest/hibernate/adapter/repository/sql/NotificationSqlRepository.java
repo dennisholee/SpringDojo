@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional.TxType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -27,6 +28,20 @@ public class NotificationSqlRepository implements NotificationRepository {
 				.map(dtoToEntity)
 				.map(this.notificationJpaRepository::save)
 				.map(entityToDto);
+	}
+
+	public Flux<NotificationDto> findAll() {
+		return Flux.fromStream(this.notificationJpaRepository.findAll()
+				.stream())
+				.map(entityToDto);
+	}
+
+	@Override
+	public Mono<NotificationDto> findById(String id) {
+		Optional<Notification> notification = notificationJpaRepository.findById(id);
+		return notification.map(entityToDto)
+				.map(Mono::just)
+				.orElse(Mono.empty());
 	}
 
 	Function<NotificationDto, Notification> dtoToEntity = dto -> {
@@ -49,4 +64,5 @@ public class NotificationSqlRepository implements NotificationRepository {
 				return dto;
 			})
 			.orElseThrow();
+
 }

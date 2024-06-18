@@ -1,0 +1,51 @@
+spring:
+  sql:
+    init.mode: ALWAYS
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: mysecretpassword
+    hikari:
+      pool-name: hikari-cp-service-pool # Database Connection Pool
+      maximum-pool-size: 10 # Default pool size = 10
+      connection-timeout: 3000 # Default connection timeout: 30000 (30 seconds)
+      minimum-idle: 10 # Default: same as maximumPoolSize
+      idle-timeout: 60000 # Defult idle timeout: 600000 (10 minutes)
+      auto-commit: false
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      javax:
+        persistence:
+#          sharedCache: 
+            #required - enable selective caching mode - only entities with @Cacheable annotation will use L2 cache.
+#            mode: ENABLE_SELECTIVE 
+      hibernate:
+        format_sql: true  #optional - enable SQL statements formatting.
+        generate_statistics: true #optional - generate statistics to check if L2/query cache is actually being used.
+#        cache:
+#          use_second_level_cache: false #required - turn on L2 cache.
+#          use_query_cache: true #optional - turn on query cache.
+#          region:
+#            factory_class: org.redisson.hibernate.RedissonRegionFactory #required - classpath to cache region factory.
+        connection:
+          provider_disables_autocommit: true
+#          handling_mode: DELAYED_ACQUISITION_AND_HOLD
+#      redisson-config: classpath:redisson.yaml
+
+application:
+  
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: trace
+    com:
+      zaxxer:
+        hikari: Trace
+        hikari.HikariConfig: DEBUG 
+         

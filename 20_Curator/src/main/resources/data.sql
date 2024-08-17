@@ -1,0 +1,16 @@
+insert into OUTBOX(id, metadata, operation, payload, status) values('8c3e9411-7d03-4e6c-a65a-2b47b30ae9c8','metadata' , 'operation', 'Dummy Task 1', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('d276964a-c926-4887-b39e-4dc7ee403520','metadata' , 'operation', 'Dummy Task 2', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('a79a2b96-8d69-44e3-826e-4c60dbb9ff60','metadata' , 'operation', 'Dummy Task 3', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('f95f5307-f326-49cf-a776-9b1391f40894','metadata' , 'operation', 'Dummy Task 4', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('b2a2bc3d-6500-4e98-b0cc-d777416dd74a','metadata' , 'operation', 'Dummy Task 5', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('49b8a095-fe60-45a7-ab68-47a28a66f0ef','metadata' , 'operation', 'Dummy Task 6', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('991035c6-c1ae-4dd2-aca6-11a2c2977b9d','metadata' , 'operation', 'Dummy Task 7', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('439dc0f6-4daa-46ac-b3ab-8efa13a587f9','metadata' , 'operation', 'Dummy Task 8', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('7e6d3084-0339-4511-b996-0d0e417c9135','metadata' , 'operation', 'Dummy Task 9', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('638568b3-d6ea-4a64-b769-432d93f7366b','metadata' , 'operation', 'Dummy Task 10', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('ad3b9092-247e-4560-8ee4-f1fdf61fc393','metadata' , 'operation', 'Dummy Task 11', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('37830c0c-09df-4fc1-b2f6-0451489e78d8','metadata' , 'operation', 'Dummy Task 12', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('daa30206-25c7-4117-ae03-29e8919b8336','metadata' , 'operation', 'Dummy Task 13', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('2961239d-014f-4b38-b08d-a7e928fe8884','metadata' , 'operation', 'Dummy Task 14', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('e4d0cd07-b87c-4482-9688-24bbd614a402','metadata' , 'operation', 'Dummy Task 15', 'W');
+insert into OUTBOX(id, metadata, operation, payload, status) values('260eb39a-31dd-433d-9937-9e0c3fc24e98','metadata' , 'operation', 'Dummy Task 16', 'W');

@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: User Query Service
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Development server
+tags:
+  - name: Users
+    description: Users
+paths:
+  /Users:
+    post:
+      tags:
+        - Users
+      summary: Query user profile.
+      description: Query user profile.
+      operationId: queryUserProfile
+      x-operation-extra-annotation: "@PreAuthorize(\"@authorizer.hasPermission('QUERY_USER')\")"
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryByName'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: QueryUserResponse
+                type: object
+                properties:
+                  user:
+                    title: QueryUserResult
+                    allOf:
+                      - $ref: '#/components/schemas/User'
+                      - type: object
+                        properties:
+                          id:
+                            description: User Identity
+                            type: string
+                            nullable: false
+                            example: 0f1b0a0a-0c57-4323-8c9a-ebc6f345e1f2
+                          version:
+                            description: System generated.
+                            type: string
+                            nullable: true
+                            example: 1a7533cf-8f19-43d3-9dde-8d181450c263
+                  status:
+                    $ref: '#/components/schemas/Status'
+components:
+  schemas:
+    QueryByName:
+      title: 'QueryByName'
+      type: object
+      properties:
+        queryType:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+    User:
+      type: object
+      properties:
+        firstName: 
+          type: string
+          minLength: 2
+          maxLength: 100
+          nullable: false
+          example: John
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          nullable: false
+          example: Smith
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 100
+          nullable: false
+          example: john.smith@foo.com
+        membershipId:
+          type: string
+    Status:
+      title: Status
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string

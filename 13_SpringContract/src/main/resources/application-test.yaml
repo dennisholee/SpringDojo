@@ -1,0 +1,4 @@
+stubrunner:
+  ids:
+    - io.forest:io.forest.contract:+:9876
+  subsMode: LOCAL

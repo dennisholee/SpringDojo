@@ -1,0 +1,5 @@
+application:
+  ai:
+    huggingface:
+      chat:
+        api-key:

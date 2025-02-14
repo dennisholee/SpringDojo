@@ -4,10 +4,10 @@ import java.util.function.Predicate;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class DefaultAuthorizer implements Authorizer {
 
 	@NonNull

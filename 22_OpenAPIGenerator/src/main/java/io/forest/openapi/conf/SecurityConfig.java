@@ -31,7 +31,9 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http.cors(corsCustomizer -> corsCustomizer.disable())
 				.authorizeHttpRequests(authz -> authz.anyRequest()
-						.authenticated())
+						.authenticated()
+						//.anonymous()
+				)
 				.httpBasic(withDefaults())
 				.csrf(crsfCustomizer -> crsfCustomizer.disable())
 				.build();

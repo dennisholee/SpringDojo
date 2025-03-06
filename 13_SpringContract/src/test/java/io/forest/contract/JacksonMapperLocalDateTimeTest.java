@@ -10,6 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @SpringBootTest(classes = WebClientConf.class)
 public class JacksonMapperLocalDateTimeTest {
 
@@ -24,7 +28,9 @@ public class JacksonMapperLocalDateTimeTest {
 
         LocalDateTime localDateTime = objectMapper.readValue("202501312359", LocalDateTime.class);
 
-
-        System.out.println(localDateTime);
+        assertAll(
+                () -> assertThat(objectMapper.readValue("202501312359", LocalDateTime.class),
+                        equalTo(LocalDateTime.of(2025,1,31,23,59)))
+        );
     }
 }

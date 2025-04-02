@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: request-coalesce
+
+api:
+  user:
+    url: http://localhost:8080/api/users
+
+logging:
+  level:
+    io.forest.caffeine.requestcoalesce: DEBUG 

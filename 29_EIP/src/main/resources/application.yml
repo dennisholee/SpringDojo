@@ -1,0 +1,29 @@
+config:
+  flows:
+    path: classpath:flows/
+#
+#router:
+#  rest-api:
+#    base-path: /api
+#    version: v1
+#    message-endpoint: /messages
+#    enable-swagger: true
+#    enable-actuator: true
+
+logging:
+  level:
+    org.springframework.integration: INFO
+    com.example.datarouter: DEBUG
+
+server:
+  port: 8080
+
+#enricher:
+#  rest-client:
+#    base-url: https://api.example.com
+#    connect-timeout: 5000
+#    read-timeout: 5000
+#    api-key: ${API_KEY:your-default-api-key}
+#    default-headers:
+#      Accept: application/json
+#      Content-Type: application/json

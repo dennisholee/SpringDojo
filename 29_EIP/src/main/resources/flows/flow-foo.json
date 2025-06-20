@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "Integration Flow Configuration",
+    "description": "Defines all integration flows for the data router",
+    "createdBy": "system"
+  },
+  "flow": {
+    "name": "foo",
+    "description": "foo flow configuration",
+    "steps": [
+      {
+        "name": "foohttpInbound",
+        "type": "httpInbound",
+        "componentName": "defaultHttpGateway",
+        "inputChannel": "httpRouterChannel",
+        "outputChannel": "httpResponseChannel",
+        "enableLogging": true,
+        "properties": {
+          "path": "/api/foo",
+          "method": "POST"
+        }
+      },
+      {
+        "name": "httpRouter",
+        "type": "router",
+        "inputChannel": "httpRouterChannel",
+        "errorChannel": "errorChannel",
+        "componentName": "dynamicMessageRouter"
+      },
+      {
+        "name": "errorHandler",
+        "type": "handler",
+        "inputChannel": "errorChannel",
+        "outputChannel": "httpResponseChannel",
+        "enableLogging": true
+      }
+    ]
+  }
+}

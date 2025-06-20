@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "Integration Flow Configuration",
+    "description": "Defines all integration flows for the data router",
+    "createdBy": "system"
+  },
+  "flow": {
+    "name": "bar",
+    "description": "bar flow configuration",
+    "steps": [
+      {
+        "name": "barhttpInbound",
+        "type": "httpInbound",
+        "componentName": "defaultHttpGateway",
+        "inputChannel": "httpRouterChannel",
+        "outputChannel": "httpResponseChannel",
+        "enableLogging": true,
+        "properties": {
+          "path": "/api/bar",
+          "method": "POST"
+        }
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@ package io.forest.testcontext;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -9,12 +10,14 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PartyService {
 
     @NonNull
     PartyRepository partyRepository;
 
     public Party findById(UUID id) {
+        log.info("Find by ID [id={}]", id);
         return Optional.ofNullable(id)
             .map(partyRepository::findById)
             .orElse(null);

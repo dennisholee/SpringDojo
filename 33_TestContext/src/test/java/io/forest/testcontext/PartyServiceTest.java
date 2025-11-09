@@ -1,14 +1,17 @@
 package io.forest.testcontext;
 
-import io.forest.testcontext.resolver.AddressAnnotation;
-import io.forest.testcontext.resolver.AddressResolver;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import io.forest.testcontext.utils.AddressAnnotation;
+import io.forest.testcontext.utils.AddressResolver;
+import io.forest.testcontext.utils.SuperTest;
+import io.forest.testcontext.utils.WireMockStub;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
 
@@ -17,10 +20,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-@ExtendWith(OutputCaptureExtension.class)
-@ExtendWith(AddressResolver.class)
+@SuperTest
+@WireMockStub("wiremock/address")
 class PartyServiceTest {
-
 
     @Autowired
     PartyService partyService;
@@ -28,9 +30,13 @@ class PartyServiceTest {
     @Test
     void test(@AddressAnnotation Address address, CapturedOutput capturedOutput) {
 
-        System.out.println(address);
-        assertThat(partyService.findById(UUID.randomUUID()), nullValue());
+        UUID partyId = UUID.fromString("7f569171-52c3-4355-8727-2d4a8fd8f68e");
 
+        partyService.onboardParty(partyId, "John", "Smith");
+
+        Party result = partyService.findById(partyId);
+
+        System.out.println("result: %s".formatted(result));
         String output = capturedOutput.getOut();
 
         assertTrue(output.contains("Find by ID"));

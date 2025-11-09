@@ -1,5 +1,7 @@
 package io.forest.testcontext;
 
+import io.forest.testcontext.utils.SuperTest;
+import io.forest.testcontext.utils.WireMockStub;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -14,7 +16,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 
 
-@SpringBootTest
+@SuperTest
+@WireMockStub("wiremock/address")
 //@Execution(ExecutionMode.CONCURRENT)
 class PartyServiceNestedTest {
 

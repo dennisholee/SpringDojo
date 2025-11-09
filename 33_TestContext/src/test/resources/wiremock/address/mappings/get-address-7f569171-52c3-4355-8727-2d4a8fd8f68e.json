@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/address",
+    "queryParameters": {
+      "partyId": {
+        "equalTo": "7f569171-52c3-4355-8727-2d4a8fd8f68e"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "address-7f569171-52c3-4355-8727-2d4a8fd8f68e.json",
+    "headers": { "Content-Type": "application/json" }
+  }
+}

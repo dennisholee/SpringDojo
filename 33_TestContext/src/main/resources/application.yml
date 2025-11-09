@@ -5,3 +5,7 @@ logging:
                 test:
                     context:
                         cache: DEBUG
+
+addressClient:
+  api:
+    basePath: "http://localhost:8080"

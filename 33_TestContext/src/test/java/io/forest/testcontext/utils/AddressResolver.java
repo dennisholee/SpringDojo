@@ -1,4 +1,4 @@
-package io.forest.testcontext.resolver;
+package io.forest.testcontext.utils;
 
 import io.forest.testcontext.Address;
 import org.junit.jupiter.api.extension.ExtensionContext;

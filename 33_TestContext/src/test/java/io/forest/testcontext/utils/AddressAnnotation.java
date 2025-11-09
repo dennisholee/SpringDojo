@@ -1,6 +1,4 @@
-package io.forest.testcontext.resolver;
-
-import net.minidev.json.annotate.JsonSmartAnnotation;
+package io.forest.testcontext.utils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

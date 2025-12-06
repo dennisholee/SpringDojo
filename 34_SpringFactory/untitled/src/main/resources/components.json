@@ -1,0 +1,13 @@
+{
+  "components": [
+    {
+      "beanName": "xxx",
+      "className": "io.forest.spring.app.DefaultTasksApp",
+      "decorate": "io.forest.spring.domain.executable.Executable"
+    },
+    {
+      "beanName": "customBeanRegistry",
+      "className": "io.forest.spring.config.CustomBeanRegistry"
+    }
+  ]
+}

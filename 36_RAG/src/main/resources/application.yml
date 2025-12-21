@@ -1,0 +1,22 @@
+spring:
+    main:
+        web-application-type: none
+    ai:
+        openai:
+            # Common base URL for all OpenAI-compatible services in LM Studio
+            base-url: http://localhost:1234
+            api-key: lm-studio
+            embedding:
+                options:
+                    # Use the exact model identifier from your LM Studio server logs
+                    model: text-embedding-nomic-embed-text-v1.5
+        vectorstore:
+            # https://docs.spring.io/spring-ai/reference/api/vectordbs/chroma.html
+            chroma:
+                tenant-name: default_tenant
+                database-name: default_database
+                client:
+                    host: http://localhost
+                    port: 8000
+                collection-name: my_collection
+                initialize-schema: true

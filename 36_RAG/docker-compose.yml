@@ -1,0 +1,37 @@
+services:
+    docling-serve:
+        image: quay.io/docling-project/docling-serve:latest
+        container_name: docling-server
+        ports:
+            - "5001:5001"
+        environment:
+            - DOCLING_SERVE_ENABLE_UI=true
+            - DOCLING_SERVE_ARTIFACTS_PATH= #/models
+            - OMP_NUM_THREADS=4
+        volumes:
+            - docling_models:/models
+        restart: unless-stopped
+        networks:
+            - ai-network
+
+    chromadb:
+        image: chromadb/chroma:0.5.20
+        container_name: chromadb
+        ports:
+            - "8000:8000"
+        environment:
+            - IS_PERSISTENT=TRUE
+            - ANONYMIZED_TELEMETRY=FALSE
+        volumes:
+            - chroma_data:/chroma/chroma
+        restart: unless-stopped
+        networks:
+            - ai-network
+
+networks:
+    ai-network:
+        driver: bridge
+
+volumes:
+    docling_models:
+    chroma_data:

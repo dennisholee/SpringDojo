@@ -1,0 +1,12 @@
+spring:
+    main:
+        web-application-type: none
+    ai:
+        openai:
+            # Common base URL for all OpenAI-compatible services in LM Studio
+            base-url: http://localhost:1234
+            api-key: lm-studio
+            embedding:
+                options:
+                    # Use the exact model identifier from your LM Studio server logs
+                    model: text-embedding-nomic-embed-text-v1.5

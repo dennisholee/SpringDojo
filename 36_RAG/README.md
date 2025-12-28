@@ -2,31 +2,40 @@
 
 This repository is a tiny "hello world" demo that shows how to connect Spring AI's OpenAI-compatible support to a locally running LM Studio instance to generate embeddings.
 
-Purpose
-- Demonstrate a minimal, reproducible setup to call LM Studio's OpenAI-compatible embedding API using Spring AI.
-- Provide a small `CommandLineRunner` that requests an embedding on startup and prints the result to stdout.
+Overview
+- Goal: demonstrate a minimal, reproducible flow where Spring AI calls an OpenAI-compatible LM Studio embedding endpoint and persists or inspects the returned embedding.
+- Scope: a CommandLineRunner-based demo (non-web) that converts or provides text, requests embeddings, and prints/saves the result.
 
-Quick overview (what this demo does)
-1. Reads LM Studio connection settings from `src/main/resources/application.yml`.
-2. On application startup a small `EmbeddingTestRunner` requests an embedding for a sample string via Spring AI and prints embedding metadata (length/dimension) to stdout.
-3. (Optional) The demo shows how to persist embeddings to a vector store and run a simple similarity search.
+What this demo shows (quick)
+1. Configure Spring AI to talk to an LM Studio OpenAI-compatible endpoint.
+2. (Optional) Use Docling to fetch and convert a web page to plain text.
+3. Use Spring AI's embedding support (OpenAI-compatible) to request an embedding vector.
+4. Persist the result into a VectorStore (or just print metadata) and run a simple similarity check.
 
 Why this is useful
-- LM Studio exposes an OpenAI-compatible API; Spring AI's OpenAI-compatible support can call it with minimal configuration.
-- This project is intentionally small to demonstrate the core pieces needed to obtain embeddings and validate connectivity.
+- LM Studio exposes an OpenAI-compatible API; Spring AI's OpenAI-compatible client can call it with minimal configuration.
+- This repo is intentionally small so you can reproduce the pieces needed to obtain embeddings and validate connectivity quickly.
 
-Files / changes of note
+Files / key artifacts
 - `src/main/resources/application.yml`
-  - Contains LM Studio settings used by Spring AI (base URL, API key, and embedding model id).
-
-- `src/main/java/io/forest/smartvalidator/EmbeddingTestRunner.java`
-  - A `CommandLineRunner` that calls Spring AI's `EmbeddingModel.embedForResponse(...)` for a sample string and prints the embedding vector length and some metadata.
-
+  - Configuration for Spring AI (base URL, API key, embedding model id). Adjust to match your LM Studio instance.
 - `src/main/java/io/forest/smartvalidator/Application.java`
-  - Standard Spring Boot application entry point.
+  - Standard Spring Boot application entry point (non-web configuration recommended for the demo).
+- `src/main/java/io/forest/smartvalidator/EmbeddingConfiguration.java`
+  - Example beans (including a RestClient forcing HTTP/1.1) and a demo CommandLineRunner that uses Docling and the VectorStore.
+- `src/main/java/io/forest/smartvalidator/DoclingDocumentReader.java`
+  - A small helper that calls a local Docling server to convert a web page into plain text.
+- `src/main/java/io/forest/smartvalidator/IngestionPipeline.java`
+  - Simple ETL: extract (Docling) -> transform (TokenTextSplitter) -> load (VectorStore).
+- `src/main/java/io/forest/smartvalidator/RagPipelineConfig.java`
+  - Configuration that wires the demo ingestion pipeline to run on startup.
 
-Configuration example
-- Add LM Studio connection settings to `src/main/resources/application.yml`. Adjust the `model` value to the exact id returned by LM Studio's `/v1/models` endpoint.
+Prerequisites
+- Java 17+ and Maven installed (or use your preferred JDK/Maven wrapper).
+- LM Studio running locally and exposing an OpenAI-compatible endpoint (commonly at `http://localhost:1234/v1`).
+- (Optional) Docling running locally if you want the demo's Docling-based web reader (`http://localhost:5001`).
+
+Configuration example (`application.yml`)
 
 ```yaml
 spring:
@@ -41,21 +50,22 @@ spring:
           model: text-embedding-nomic-embed-text-v1.5
 ```
 
-Notes about HTTP/1.1
-- Some local deployments of LM Studio may require HTTP/1.1. If you observe protocol errors, create or configure the RestClient/HttpClient bean used by Spring AI to force HTTP/1.1 for the LM Studio `base-url`.
-
 Step-by-step guideline — steps taken in this demo
-1) Ensure LM Studio is running locally and an embedding-capable model is loaded.
-   - Confirm LM Studio exposes an OpenAI-compatible API (typically `http://localhost:1234/v1`).
-   - Note the exact model id shown by LM Studio's `/v1/models` endpoint and use it in `application.yml`.
 
-2) Configure `application.yml` as shown above. Set `web-application-type` to `none` to run the `CommandLineRunner` immediately on startup.
+1) Prepare and confirm LM Studio
+- Start LM Studio locally and ensure an embedding-capable model is loaded.
+- Confirm LM Studio's OpenAI-compatible API is reachable (e.g. `http://localhost:1234/v1`).
+- Note the model id returned by `GET /v1/models` and use it in `application.yml`.
 
-3) (Optional) If necessary, add a RestClient/HttpClient bean to enforce HTTP/1.1 for requests to LM Studio.
+2) (Optional) Start Docling if using the Docling-based reader
+- Docling is used only for converting a remote web page to text (the project includes a Docling reader).
+- If you don't want to run Docling, you can provide your own sample text instead of fetching a web page.
 
-4) Build and run the project.
+3) Force HTTP/1.1 when necessary
+- Some local deployments (LM Studio or other model servers) may require HTTP/1.1. The project includes an example RestClient/HttpClient bean that forces HTTP/1.1. Enable it if you see protocol errors.
 
-- Build and run (Maven, macOS zsh):
+4) Build and run the demo
+- Build the project and run the jar (or use `spring-boot:run`). Example (macOS zsh):
 
 ```bash
 # package and run the jar
@@ -66,43 +76,45 @@ java -jar target/smart-validator-1.0-SNAPSHOT.jar
 mvn -DskipTests spring-boot:run
 ```
 
-5) Verify LM Studio connectivity (optional) — list available models:
+5) Verify LM Studio connectivity (optional)
 
 ```bash
 curl -s -X GET "http://localhost:1234/v1/models" -H "Authorization: Bearer lm-studio" | head -n 200
 ```
 
-6) What you should see
-- On successful connection and valid model id, the `EmbeddingTestRunner` prints the sample text and embedding information (vector length/dimension and any metadata).
-- If the LM Studio server is unreachable or the model id is wrong, the runner logs the error and the app exits (or prints a non-fatal message depending on runner implementation).
+6) Expected output
+- If configured correctly the demo runner will print a short log showing the sample text and embedding metadata (vector length / dimension). If the repo is configured to persist embeddings, you'll also see VectorStore confirmation and a simple similarity query result.
+- If LM Studio is unreachable or the model id is incorrect, the runner will log an error.
 
-Optional — persist and validate embeddings
-- After receiving an embedding vector you can store it in a vector DB (Chromadb, FAISS, Pinecone, etc.) and run a similarity search to validate results.
+PlantUML sequence diagram (high-level flow)
 
-Chromadb example — create a collection (HTTP example)
+```plantuml
+@startuml
+actor "Developer" as Dev
+participant "Application (Spring Boot)" as App
+participant "Docling (optional)" as Docling
+participant "LM Studio (OpenAI API)" as LMStudio
+participant "VectorStore" as VS
 
-```bash
-curl -X 'POST' \
-  'http://localhost:8000/api/v1/collections?tenant=default_tenant&database=default_database' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "name": "my_collection",
-    "configuration": {},
-    "metadata": {"description": "My first collection"},
-    "get_or_create": true
-  }'
+Dev -> App: start
+App -> Docling: fetch & convert URL (optional)
+Docling --> App: plain text
+App -> LMStudio: request embedding (text)
+LMStudio --> App: embedding vector
+App -> VS: store Document + embedding
+App -> Dev: print metadata / similarity results
+@enduml
 ```
 
 Troubleshooting
 - zsh: command not found: mvn — install Maven (`brew install maven` on macOS).
-- Connection refused — ensure LM Studio is running on the configured host/port and the `/v1` endpoints are enabled.
+- Connection refused — ensure LM Studio (and Docling if used) are running on configured host/ports.
 - model not found — verify the model id in `application.yml` matches a model from LM Studio's `/v1/models`.
-- HTTP protocol errors — try forcing HTTP/1.1 for the RestClient used by Spring AI.
+- HTTP protocol errors — try forcing HTTP/1.1 for the RestClient used by Spring AI (see `RagPipelineConfig` / `EmbeddingConfiguration`).
 
 Next steps / ideas
-- Add a small `EmbeddingTestRunner` unit test to mock the embedding response.
-- Persist embeddings into a chosen vector store and add an integration test for similarity search.
+- Add a unit/integration test for the `EmbeddingTestRunner` with a mocked LM Studio response.
+- Persist embeddings in a real vector DB (Chromadb, FAISS, etc.) and add integration tests for similarity search.
 
 License
 - Use and modify as needed for learning and development purposes.

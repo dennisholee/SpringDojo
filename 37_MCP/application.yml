@@ -1,0 +1,31 @@
+spring:
+    main:
+        allow-bean-definition-overriding: true
+    ai:
+        mcp:
+            server:
+                protocol: STATELESS
+                type: SYNC
+                annotation-scanner:
+                    enabled: true
+            client:
+                enabled: false
+                type: ASYNC
+                toolcallback:
+                    enabled: false
+                streamable-http:
+                    connections:
+                        localapi:
+                            url: http://localhost:8080
+                            #endpoint: /mcp
+
+        openai:
+            # Redirect from api.openai.com to local LM Studio
+            base-url: http://localhost:1234
+            # LM Studio doesn't require a real key, but Spring AI needs a non-empty string
+            api-key: lm-studio
+            chat:
+                options:
+                    # Use the exact model name as shown in the LM Studio "Model" dropdown
+                    model: meta-llama-3.1-8b-instruct
+                    temperature: 0.7

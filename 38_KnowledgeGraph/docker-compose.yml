@@ -1,0 +1,21 @@
+services:
+    neo4j:
+        image: neo4j:latest # Use the latest official image from Docker Hub
+        hostname: neo4j
+        container_name: neo4j
+        ports:
+            - "7474:7474" # Web browser access (HTTP)
+            - "7687:7687" # Bolt protocol access (for drivers/applications)
+        environment:
+            # Set the default username and password (format: username/password)
+            # You will be prompted to change the password on the first login
+            - NEO4J_AUTH=neo4j/your_chosen_password
+            # Optional: Accept the license agreement for Enterprise Edition features (not needed for community)
+            # - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+        volumes:
+            # Mount local directories to persist data, logs, config, and plugins
+            - ./data:/data
+            - ./logs:/logs
+            - ./config:/config
+            - ./plugins:/plugins
+        restart: always # Ensure the container restarts automatically

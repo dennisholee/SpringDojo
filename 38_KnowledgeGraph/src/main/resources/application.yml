@@ -1,0 +1,30 @@
+spring:
+    neo4j:
+        uri: neo4j://192.168.1.23:7687
+        authentication:
+            username: neo4j
+            password: your_password
+    main:
+        web-application-type: none
+        allow-bean-definition-overriding: true
+    ai:
+        openai:
+            # Redirect from api.openai.com to local LM Studio
+            base-url: http://192.168.1.23:1234
+            # LM Studio doesn't require a real key, but Spring AI needs a non-empty string
+            api-key: lm-studio
+            chat:
+                options:
+                    model: phi-3-mini-4k-instruct
+                    max-tokens: 30000
+                    temperature: 0
+            embedding:
+                enabled: true
+                options:
+                    # Use the exact model identifier from your LM Studio server logs
+                    model: text-embedding-nomic-embed-text-v1.5
+        vectorstore:
+            neo4j:
+                initialize-schema: true  # Auto-creates vector indexes
+                index-name: custom-index
+                embedding-dimension: 1536 # Match your LLM's dimension

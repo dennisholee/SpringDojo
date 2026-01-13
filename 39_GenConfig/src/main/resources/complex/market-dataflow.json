@@ -1,0 +1,10 @@
+{
+  "flowId": "marketDataFlow",
+  "input": "symbolInput",
+  "steps": [
+    { "type": "publishSubscribe", "channels": ["apiSourceA", "apiSourceB"] },
+    { "type": "aggregator", "timeout": 5000, "groupTimeout": 2000, "sendPartialResultsOnExpiry": true },
+    { "type": "transformer", "expression": "payload.?[value != null]" }
+  ]
+}
+

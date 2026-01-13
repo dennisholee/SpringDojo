@@ -1,0 +1,13 @@
+{
+  "flowId": "userEnrichmentFlow",
+  "input": "partialUserChannel",
+  "steps": [
+    {
+      "type": "enricher",
+      "requestChannel": "apiLookupChannel",
+      "propertyMappings": { "address": "payload.fullAddress", "tier": "payload.loyaltyTier" }
+    },
+    { "type": "to", "channel": "enrichedUserOutput" }
+  ]
+}
+

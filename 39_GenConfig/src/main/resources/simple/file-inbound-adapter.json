@@ -1,0 +1,2 @@
+{"id": "fileReader", "fileSource": "/data/in", "pattern": "*.csv", "to": "csvProcessing"}
+

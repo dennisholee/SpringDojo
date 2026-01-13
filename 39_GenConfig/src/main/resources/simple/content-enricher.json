@@ -1,0 +1,2 @@
+{"id": "enricher", "from": "partialData", "enrich": {"service": "dataSvc", "property": "details", "to": "fullData"}}
+

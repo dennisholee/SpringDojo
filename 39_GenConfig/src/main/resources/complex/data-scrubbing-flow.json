@@ -1,0 +1,11 @@
+{
+  "flowId": "dataScrubbingFlow",
+  "input": "rawData",
+  "steps": [
+    { "type": "filter", "expression": "payload.isValid()" },
+    { "type": "transformer", "bean": "piiScrubber", "method": "maskSsn" },
+    { "type": "transformer", "expression": "new com.dto.SecureData(payload)" },
+    { "type": "to", "channel": "cleanData" }
+  ]
+}
+

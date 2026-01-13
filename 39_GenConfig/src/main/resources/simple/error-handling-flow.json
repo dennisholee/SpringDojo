@@ -1,0 +1,2 @@
+{"id": "errorFlow", "from": "errorChannel", "transform": "'Error: ' + payload.message", "to": "alertSystem"}
+

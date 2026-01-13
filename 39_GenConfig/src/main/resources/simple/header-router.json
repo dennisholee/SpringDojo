@@ -1,0 +1,2 @@
+{"id": "headerRouter", "from": "input", "routeByHeader": "targetType", "mapping": {"A": "channelA", "B": "channelB"}}
+

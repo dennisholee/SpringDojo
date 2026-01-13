@@ -1,0 +1,15 @@
+{
+  "flowId": "auditFanOutFlow",
+  "input": "transactionInput",
+  "steps": [
+    {
+      "type": "recipientList",
+      "recipients": [
+        { "channel": "auditLog", "selector": "payload.amount > 10000" },
+        { "channel": "realTimeAnalytics", "selector": "headers['priority'] == 'high'" },
+        { "channel": "coldStorage", "selector": "true" }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,13 @@
+{
+  "flowId": "regionalRouterFlow",
+  "input": "globalInput",
+  "steps": [
+    { 
+      "type": "router", 
+      "expression": "payload.region", 
+      "mapping": { "US": "usKafkaTopic", "EU": "euKafkaTopic", "APAC": "apacKafkaTopic" },
+      "defaultOutputChannel": "deadLetterChannel"
+    }
+  ]
+}
+

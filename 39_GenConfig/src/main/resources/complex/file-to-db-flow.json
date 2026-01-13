@@ -1,0 +1,11 @@
+{
+  "flowId": "fileToDbFlow",
+  "source": { "type": "file", "directory": "/inbound", "preventDuplicates": true },
+  "steps": [
+    { "type": "transformer", "bean": "csvToJsonTransformer" },
+    { "type": "requestHandlerRetry", "maxAttempts": 3, "backOff": 1000 },
+    { "type": "serviceActivator", "bean": "repositoryBean", "method": "save" }
+  ],
+  "errorChannel": "fileErrorChannel"
+}
+

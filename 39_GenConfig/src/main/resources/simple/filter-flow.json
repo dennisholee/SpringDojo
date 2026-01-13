@@ -1,0 +1,2 @@
+{"id": "filterFlow", "from": "input", "filter": "payload.age > 18", "to": "activeUsers"}
+

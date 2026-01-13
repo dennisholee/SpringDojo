@@ -1,0 +1,11 @@
+{
+  "flowId": "claimCheckFlow",
+  "input": "largeBlobInput",
+  "steps": [
+    { "type": "claimCheckIn", "store": "redisMessageStore" },
+    { "type": "serviceActivator", "bean": "metadataProcessor" },
+    { "type": "claimCheckOut", "store": "redisMessageStore" },
+    { "type": "to", "channel": "finalProcessing" }
+  ]
+}
+

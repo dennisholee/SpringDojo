@@ -1,0 +1,11 @@
+{
+  "flowId": "orderProcessingFlow",
+  "input": "ordersInput",
+  "steps": [
+    { "type": "splitter", "applySequence": true },
+    { "type": "serviceActivator", "bean": "inventoryService", "method": "checkStock" },
+    { "type": "aggregator", "correlationStrategy": "headers['id']", "releaseStrategy": "size == headers['sequenceSize']" },
+    { "type": "to", "channel": "processedOrders" }
+  ]
+}
+

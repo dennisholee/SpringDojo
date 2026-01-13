@@ -1,0 +1,2 @@
+{"id": "kafkaPush", "from": "input", "kafka": {"topic": "orders", "template": "kafkaTemplate"}}
+

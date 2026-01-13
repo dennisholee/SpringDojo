@@ -1,0 +1,2 @@
+{"id": "batchFlow", "from": "listInput", "split": true, "process": "itemProcessor", "aggregate": true, "to": "results"}
+

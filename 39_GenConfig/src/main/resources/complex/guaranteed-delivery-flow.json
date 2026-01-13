@@ -1,0 +1,10 @@
+{
+  "flowId": "guaranteedDeliveryFlow",
+  "source": { "type": "kafka", "topic": "events", "groupId": "db-writer-group" },
+  "steps": [
+    { "type": "transactional", "manager": "transactionManager" },
+    { "type": "serviceActivator", "bean": "eventRepo", "method": "insertEvent" },
+    { "type": "to", "channel": "confirmationChannel" }
+  ]
+}
+

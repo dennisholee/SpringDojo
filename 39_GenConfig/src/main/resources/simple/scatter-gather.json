@@ -1,0 +1,2 @@
+{"id": "scatterGather", "from": "request", "scatter": ["api1", "api2"], "gather": {"releaseSize": 2, "to": "aggResults"}}
+

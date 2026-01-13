@@ -1,0 +1,10 @@
+{
+  "flowId": "throttledApiFlow",
+  "input": "rateLimitedQueue",
+  "poller": { "fixedDelay": 100, "maxMessagesPerPoll": 5 },
+  "steps": [
+    { "type": "executorChannel", "poolSize": 2, "queueCapacity": 10 },
+    { "type": "httpOutbound", "url": "legacy-api.com", "method": "PUT" }
+  ]
+}
+

@@ -1,0 +1,2 @@
+{"id": "upperFlow", "from": "input", "transform": "payload.toUpperCase()", "to": "output"}
+

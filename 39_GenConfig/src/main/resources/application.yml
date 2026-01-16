@@ -3,20 +3,15 @@ spring:
         web-application-type: none
         allow-bean-definition-overriding: true
     ai:
-        openai:
-            # Redirect from api.openai.com to local LM Studio
-            base-url: http://192.168.1.23:1234
-            # LM Studio doesn't require a real key, but Spring AI needs a non-empty string
-            api-key: lm-studio
-            chat:
-                options:
-                    model: nuextract-v1.5
-                    max-tokens: 30000
-                    temperature: 0
-                  #  response-format:
-                  #      type: JSON_SCHEMA
-        vectorstore:
-            neo4j:
-                initialize-schema: true  # Auto-creates vector indexes
-                index-name: custom-index
-                embedding-dimension: 1536 # Match your LLM's dimension
+        model:
+            chat: none
+            embedding: none
+            image: none
+            moderation: none
+            ocr: none
+            audio:
+                speech: none
+                transcription: none
+        chat:
+            client:
+                enabled: false

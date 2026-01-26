@@ -1,0 +1,6 @@
+id,full_name,transaction_date,amount_usd,status
+1,James Smith,2026-01-01,150.50,Success
+2,Maria Garcia,2026-01-02,45.00,Pending
+3,Robert Johnson,2026-01-03,210.99,Success
+4,Patricia Williams,2026-01-04,89.20,Failed
+5,Michael Brown,2026-01-05,12.00,Success

@@ -1,0 +1,26 @@
+spring:
+    datasource:
+        url: jdbc:arrow-flight-sql://192.168.1.23:32010/?useEncryption=false
+        driver-class-name: org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver
+        username: dennislee
+        password: sts38ycnMty9JNM
+    main:
+        web-application-type: none
+        allow-bean-definition-overriding: true
+    ai:
+        openai:
+            # Redirect from api.openai.com to local LM Studio
+            base-url: http://192.168.1.23:1234
+            # LM Studio doesn't require a real key, but Spring AI needs a non-empty string
+            api-key: lm-studio
+            chat:
+                options:
+                    model: mistralai/ministral-3-3b # qwen/qwen3-8b
+                    max-tokens: 30000
+                    temperature: 0
+
+logging:
+    level:
+        org:
+            springframework:
+                ai: DEBUG

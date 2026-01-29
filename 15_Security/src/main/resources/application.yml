@@ -1,0 +1,14 @@
+springdoc:
+  api-docs:
+    enabled: true
+    groups:
+      enabled: true
+ # packagesToScan: *
+  #io.forest.security.adapter.web.server
+#  pathsToMatch: /*
+  #/Users
+  swagger-ui:
+    syntax-highlight:
+      activated: true
+    operationsSort: alpha
+    tagsSorter: alpha

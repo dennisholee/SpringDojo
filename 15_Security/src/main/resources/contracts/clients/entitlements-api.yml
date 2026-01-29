@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Entitlement Service
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Development server
+tags:
+  - name: Entitlements
+    description: User entitlements
+paths:
+  /entitlements/{userId}:
+    get:
+      tags:
+        - Entitlements
+      summary: Get entitlement by user ID
+      description: Get entitlement by user ID.
+      operationId: getEntitlementByUserID
+      parameters:
+        - name: userId
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetEntitlementByUserIDResponse"
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/status"
+    GetEntitlementByUserIDResponse:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      resource:
+                        type: string
+                      permission:
+                        type: string
+    status:
+      title: Status
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []

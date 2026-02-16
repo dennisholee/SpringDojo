@@ -1,0 +1,8 @@
+Spring AI is an open-source application framework designed to simplify the integration of generative artificial
+intelligence into the Java ecosystem by applying familiar Spring design principles like portability and modularity.
+It provides a unified abstraction layer that allows developers to interact with a wide range of AI models—including
+OpenAI, Anthropic, and Google Vertex AI—without writing provider-specific boilerplate code. Key features include a
+fluent ChatClient API for model interactions, support for Retrieval Augmented Generation (RAG) to connect enterprise
+data with AI, and Function Calling capabilities that enable models to trigger real-time external API actions.
+By leveraging Spring Boot autoconfiguration and starters, the framework democratizes AI development for Java engineers,
+making it possible to build sophisticated, production-ready AI applications with minimal reskilling.

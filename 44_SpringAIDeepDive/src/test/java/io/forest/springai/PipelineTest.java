@@ -7,12 +7,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+/**
+ * Integration-style test that runs the demo pipeline with multiple
+ * chunking strategies. The test is intentionally lightweight and primarily
+ * documents expected inputs for developers exploring the project.
+ */
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PipelineTest {
 
     @Autowired
     Pipeline pipeline;
+
+    // String query = "What are the key features of Spring AI and how does it simplify Java AI development?";
+
+    // String query = "How does Spring AI use Spring Boot to help Java engineers build RAG applications?";
+
+    //String query = "How does Spring AI interact with external APIs?";
+
+    // String query = "Does Spring AI handle service discovery?";
+
+    // String query = "Explain the modular principles of Spring AI.";
 
     @ParameterizedTest()
     @CsvSource({
@@ -35,6 +50,8 @@ class PipelineTest {
             minChunkLengthToEmbed,
             maxNumChunks);
 
-        pipeline.run(chunkingStrategy);
+        String query = "How do I use Virtual Threads in Spring AI?";
+
+        pipeline.run(query, chunkingStrategy);
     }
 }

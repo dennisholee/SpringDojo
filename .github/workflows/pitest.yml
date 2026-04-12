@@ -38,8 +38,9 @@ jobs:
             ${{ runner.os }}-m2-
 
       - name: Run Pitest (clean JVM args)
+        working-directory: 45_IntegrationHub
         env:
           JAVA_TOOL_OPTIONS: ''
           MAVEN_OPTS: ''
         run: |
-          mvn -B -V -Dcheckstyle.skip=true -Denable.quality.enforcements=true verify
+          mvn -B -V -f 45_IntegrationHub/pom.xml -Dcheckstyle.skip=true -Denable.quality.enforcements=true verify

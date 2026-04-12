@@ -61,6 +61,13 @@
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
 				<version>${pitest.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>0.15</version>
+					</dependency>
+				</dependencies>
 				<executions>
 					<execution>
 						<id>pitest</id>
@@ -72,12 +79,17 @@
 				</executions>
 				<configuration>
 					<targetClasses>
-						<param>io.forest.integrationhub..*</param>
+						<param>io.forest..*</param>
 					</targetClasses>
+					<!-- Ensure Pitest scans tests matching integrationhub package for mutation units -->
+					<targetTests>
+						<param>io.forest.integrationhub..*</param>
+					</targetTests>
 					<threads>4</threads>
 					<outputFormats>
 						<param>HTML</param>
 					</outputFormats>
+                        
 					<failWhenNoMutations>false</failWhenNoMutations>
 					<mutationThreshold>90</mutationThreshold>
 				</configuration>

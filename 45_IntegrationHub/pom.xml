@@ -107,6 +107,29 @@
 						</goals>
 						<phase>verify</phase>
 					</execution>
+
+					<execution>
+						<id>pitest-adapters</id>
+						<goals>
+							<goal>mutationCoverage</goal>
+						</goals>
+						<phase>verify</phase>
+						<configuration>
+							<targetClasses>
+								<param>io.forest.integrationhub.adapters.*</param>
+							</targetClasses>
+							<targetTests>
+								<param>io.forest.integrationhub.*</param>
+							</targetTests>
+							<threads>2</threads>
+							<outputFormats>
+								<param>HTML</param>
+							</outputFormats>
+							<verbose>true</verbose>
+							<failWhenNoMutations>false</failWhenNoMutations>
+							<mutationThreshold>80</mutationThreshold>
+						</configuration>
+					</execution>
 				</executions>
 				<configuration>
 					<targetClasses>

@@ -79,11 +79,11 @@
 				</executions>
 				<configuration>
 					<targetClasses>
-						<param>io.forest..*</param>
+						<param>io.forest.integrationhub.*</param>
 					</targetClasses>
 					<!-- Ensure Pitest scans tests matching integrationhub package for mutation units -->
 					<targetTests>
-						<param>io.forest.integrationhub..*</param>
+						<param>io.forest.integrationhub.*</param>
 					</targetTests>
 					<threads>4</threads>
 					<outputFormats>

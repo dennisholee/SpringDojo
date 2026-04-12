@@ -23,4 +23,9 @@ class SampleMathTest {
     void addOverflowThrows() {
         assertThrows(IllegalArgumentException.class, () -> SampleMath.add(Integer.MAX_VALUE, 1));
     }
+
+    @Test
+    void addMaxPlusZeroDoesNotThrow() {
+        assertEquals(Integer.MAX_VALUE, SampleMath.add(Integer.MAX_VALUE, 0));
+    }
 }

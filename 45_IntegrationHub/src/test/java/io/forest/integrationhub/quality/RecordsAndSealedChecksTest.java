@@ -3,6 +3,13 @@ package io.forest.integrationhub.quality;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assumptions;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class RecordsAndSealedChecksTest {
@@ -15,11 +22,46 @@ public class RecordsAndSealedChecksTest {
     }
 
     @Test
-    public void dtosMustBeRecords() {
-        // When enabled in CI, this test should perform reflection checks for DTO/Sealed rules.
-        // For now the test is a failing placeholder when explicitly enabled to force implementation.
+    public void dtosMustBeRecords() throws Exception {
+        // Only run when explicitly enabled (CI); scans compiled classes under target/classes.
         Assumptions.assumeTrue(Boolean.getBoolean("enable.quality.enforcements"),
                 "Reflection enforcements are disabled by default");
-        fail("Reflection-based DTO/Sealed checks not implemented yet (see T015 in tasks.md).");
+
+        Path classesRoot = Paths.get("target", "classes");
+        if (!Files.exists(classesRoot)) {
+            // Nothing compiled — avoid failing the build here.
+            return;
+        }
+
+        List<String> violations = new ArrayList<>();
+
+        Files.walk(classesRoot)
+                .filter(p -> p.toString().endsWith(".class"))
+                .forEach(p -> {
+                    Path rel = classesRoot.relativize(p);
+                    String fqcn = rel.toString().replace(File.separatorChar, '.');
+                    fqcn = fqcn.substring(0, fqcn.length() - ".class".length());
+                    try {
+                        Class<?> cls = Class.forName(fqcn, false, Thread.currentThread().getContextClassLoader());
+                        String simple = cls.getSimpleName();
+                        String pkg = (cls.getPackage() != null) ? cls.getPackage().getName() : "";
+
+                        boolean looksLikeDto = simple.endsWith("Dto") || pkg.contains(".dto.");
+                        if (looksLikeDto && !cls.isRecord()) {
+                            violations.add(fqcn + " looks like a DTO but is not a record");
+                        }
+
+                        boolean looksLikeState = simple.endsWith("State") || pkg.contains(".domain.");
+                        if (looksLikeState && !cls.isSealed()) {
+                            violations.add(fqcn + " looks like a domain state but is not sealed");
+                        }
+                    } catch (Throwable ignored) {
+                        // Ignore classes that cannot be loaded or initialized.
+                    }
+                });
+
+        if (!violations.isEmpty()) {
+            fail("DTO/Sealed enforcement failures:\n" + String.join("\n", violations));
+        }
     }
 }

@@ -4,7 +4,7 @@ Feature: [spec.md](spec.md)
 
 - [ ] T001 FR-001: Draft Protobuf contracts (messages & services)
 - [ ] T002 FR-002: Document transport-to-domain mapping rules (adapters perform mapping)
-- [ ] T003 FR-003: Define performance benchmark harness and nightly execution plan
+ - [ ] T003 FR-003: Define performance benchmark harness, representative load profile, and nightly execution plan
 - [ ] T004 FR-004: Implement schema-evolution/versioning policy and tests
 - [ ] T005 Implement `protobuf-maven-plugin` config and generate stubs locally
 - [ ] T006 Implement adapter mapping classes and unit tests for correctness
@@ -15,4 +15,6 @@ Feature: [spec.md](spec.md)
 - [ ] T011 Add ArchUnit fitness-function tests and enforce them in CI (module-level)
 - [ ] T012 Add Pitest configuration and CI job enforcing mutation thresholds (core >=90%, adapters >=80%)
 - [ ] T013 Clarify generated-sources policy in `plan.md` and configure CI to generate stubs during build (do not commit generated files)
-- [ ] T014 Define representative performance load profile and implement benchmark harness (smoke + nightly)
+ - [ ] T015 Add reflection enforcement tests (records/sealed) and enable them in CI (`-Denable.quality.enforcements=true`)
+
+Note: T014 has been merged into T003 (performance profile + harness).

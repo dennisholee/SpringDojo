@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - '010-*'
+      - '010-**'
   pull_request:
   workflow_dispatch:
 

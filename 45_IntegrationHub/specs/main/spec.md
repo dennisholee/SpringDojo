@@ -101,3 +101,18 @@ As a new developer, I want a short guide and examples showing common violations 
 - `specs/main/acceptance-tests.md` (automated + manual validation)  
 - `specs/main/tasks.md` (implementation tasks and checklist)  
 - `specs/main/plan.md` (implementation plan / milestones)
+
+## Annex — Implementation-agnostic summary (consolidated)
+
+The following material was consolidated from an earlier, implementation-agnostic draft (`specs/001-quality`) to preserve high-level intent while keeping `specs/main` as the canonical Quality specification.
+
+- **Summary**: Enforce hexagonal boundaries and modular encapsulation through automated checks. Prevent middleware/adapter logic from leaking into the core/domain layer; block merges on violations and provide clear remediation guidance.
+- **Edge Cases**:
+	- Allow documented exceptions for migration helpers that must temporarily live in `core`; these require an explicit allowlist entry and owner.
+	- Generated or vendored code that shares package name patterns should be excluded via an allowlist and validated separately.
+	- Test-only dependencies that intentionally reference adapters should be excluded or handled with test-scoped rules.
+- **Assumptions**:
+	- The repository can run CI checks that execute fitness functions during the standard test phase.
+	- The enforcement approach focuses on detection and remediation guidance; tool-specific implementations (ArchUnit) are described in this canonical spec and the constitution.
+
+Consolidation note: `specs/001-quality` has been merged into this file; the original directory was archived/removed to avoid duplication.

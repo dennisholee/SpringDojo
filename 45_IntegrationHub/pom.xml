@@ -1,0 +1,120 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.forest</groupId>
+	<artifactId>integrationhub</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<junit.version>5.10.0</junit.version>
+		<archunit.version>1.4.1</archunit.version>
+		<pitest.version>1.19.5</pitest.version>
+		<checkstyle.version>3.2.2</checkstyle.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<release>21</release>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.1.2</version>
+				<configuration>
+					<useSystemClassLoader>true</useSystemClassLoader>
+					<systemPropertyVariables>
+						<archunit.root.package>io.forest.integrationhub</archunit.root.package>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.version}</version>
+				<executions>
+					<execution>
+						<id>pitest</id>
+						<goals>
+							<goal>mutationCoverage</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<targetClasses>
+						<param>io.forest.integrationhub..*</param>
+					</targetClasses>
+					<threads>4</threads>
+					<outputFormats>
+						<param>HTML</param>
+					</outputFormats>
+					<failWhenNoMutations>false</failWhenNoMutations>
+					<mutationThreshold>90</mutationThreshold>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${checkstyle.version}</version>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configLocation>config/checkstyle/checkstyle.xml</configLocation>
+					<failsOnError>true</failsOnError>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>adapter-compat</id>
+			<properties>
+				<!-- Set this to the adapter profile in CI matrix runs -->
+				<active.adapter.profile>inmemory</active.adapter.profile>
+			</properties>
+		</profile>
+	</profiles>
+
+	<reporting />
+
+</project>

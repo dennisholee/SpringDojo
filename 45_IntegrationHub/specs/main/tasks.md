@@ -17,3 +17,13 @@
 - [x] T017 Create `specs/main/archunit-allowlist.md` and enforce allowlist validation in CI test phase
 - [x] T018 Add Pitest mutation and complexity checks to CI and document thresholds
 - [x] T019 Standardize `archunit.root.package` property across constitution and docs
+
+-- Mappings: link tasks to feature requirements (FR)
+- T006: FR-001 (implement rules)
+- T007: FR-001 (test harness)
+- T008: FR-001 / FR-002 (rule encoding + readable reports)
+- T009: FR-004 (sample passing/failing examples)
+- T010: FR-001 (dependency/configuration)
+- T011: FR-003 (CI integration)
+- T015: FR-006 (remediation guide)
+- T017: FR-005 (allowlist)

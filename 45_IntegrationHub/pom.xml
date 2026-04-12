@@ -32,6 +32,12 @@
 			<version>${archunit.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.24.3</version>
+		</dependency>
 	</dependencies>
 
 	<build>

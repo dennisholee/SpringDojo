@@ -6,6 +6,7 @@ on:
       - master
       - '010-*'
   pull_request:
+  workflow_dispatch:
 
 jobs:
   pitest:

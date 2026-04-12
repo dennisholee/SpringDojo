@@ -89,6 +89,7 @@
 					<outputFormats>
 						<param>HTML</param>
 					</outputFormats>
+					<verbose>true</verbose>
                         
 					<failWhenNoMutations>false</failWhenNoMutations>
 					<mutationThreshold>90</mutationThreshold>

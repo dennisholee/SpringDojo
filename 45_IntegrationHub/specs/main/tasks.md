@@ -1,0 +1,19 @@
+- [ ] T001 Create feature branch and `specs/main/` directory (speckit.git.feature)
+- [ ] T002 Draft `specs/main/spec.md` from the spec template with P1–P3 stories
+- [ ] T003 [P] Write P1 (Prevent core leakage) acceptance scenarios in `specs/main/spec.md`
+- [ ] T004 [P] Write P2 (Clear failure messages) acceptance scenarios in `specs/main/spec.md`
+- [ ] T005 [P] Write P3 (Developer onboarding) acceptance scenarios in `specs/main/spec.md`
+- [ ] T006 Draft `specs/main/archunit-rules.md` with concrete rules and remediation
+- [ ] T007 Implement ArchUnit test harness skeleton in `src/test/java/io/forest/integrationhub/ArchUnitRulesTest.java`
+- [ ] T008 Add ArchUnit tests encoding the rules (forbidden core→adapter deps, no Spring in core)
+- [ ] T009 [P] Add sample failing/passing cases under `src/test/java/io/forest/integrationhub/`
+- [ ] T010 Update `pom.xml` to include ArchUnit dependency and ensure tests run
+- [ ] T011 Add CI workflow `.github/workflows/archunit-check.yml` to run the tests and fail PRs
+- [ ] T012 [P] Write `specs/main/acceptance-tests.md` with automated + manual steps
+- [ ] T013 [P] Generate `specs/main/plan.md` with milestones and estimates
+ - [x] T014 Run local validation: `mvn -Dtest=io.forest.integrationhub.ArchUnitRulesTest test` and fix violations
+- [ ] T015 [P] Write remediation guide and examples in `specs/main/archunit-rules.md`
+- [ ] T016 Open PR from the feature branch and request review from devs/build engineers
+- [x] T017 Create `specs/main/archunit-allowlist.md` and enforce allowlist validation in CI test phase
+- [x] T018 Add Pitest mutation and complexity checks to CI and document thresholds
+- [x] T019 Standardize `archunit.root.package` property across constitution and docs

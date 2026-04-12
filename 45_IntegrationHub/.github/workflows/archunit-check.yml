@@ -1,0 +1,50 @@
+name: CI - ArchUnit Checks
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  archunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [21]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Run full verification (tests, Pitest, Checkstyle)
+        run: mvn -B -Darchunit.root.package=io.forest.integrationhub verify
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+
+      - name: Upload pit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit-reports
+          path: target/pit-reports/
+          if-no-files-found: ignore

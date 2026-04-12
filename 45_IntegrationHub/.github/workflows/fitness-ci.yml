@@ -1,0 +1,47 @@
+name: CI - Architecture Fitness
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [21]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - name: Build and run tests (ArchUnit + Checkstyle)
+        run: mvn -B -Darchunit.root.package=io.forest.integrationhub clean verify
+
+  adapter-compat:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        adapter: [inmemory]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Run adapter contract tests for profile
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ matrix.adapter }}
+        run: mvn -B -Darchunit.root.package=io.forest.integrationhub -Dspring.profiles.active=${{ matrix.adapter }} test

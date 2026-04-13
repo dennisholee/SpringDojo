@@ -11,7 +11,6 @@ on:
 
 jobs:
   pitest:
-    if: ${{ false }}
     name: Run Pitest
     runs-on: ubuntu-latest
     env:

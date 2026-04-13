@@ -16,6 +16,7 @@
 		<archunit.version>1.4.1</archunit.version>
 		<pitest.version>1.19.5</pitest.version>
 		<checkstyle.version>3.2.2</checkstyle.version>
+		<pitest.mutationThreshold>90</pitest.mutationThreshold>
 	</properties>
 
 	<dependencies>
@@ -133,7 +134,7 @@
 							</outputFormats>
 							<verbose>true</verbose>
 							<failWhenNoMutations>false</failWhenNoMutations>
-							<mutationThreshold>80</mutationThreshold>
+							<mutationThreshold>${pitest.mutationThreshold}</mutationThreshold>
 						</configuration>
 					</execution>
 				</executions>
@@ -155,7 +156,7 @@
 					<verbose>true</verbose>
                         
 					<failWhenNoMutations>false</failWhenNoMutations>
-					<mutationThreshold>90</mutationThreshold>
+					<mutationThreshold>${pitest.mutationThreshold}</mutationThreshold>
 				</configuration>
 			</plugin>
 

@@ -1,29 +1,50 @@
-# 002 — Data Integrity
+# 002 — Data Integrity — Specification
 
-## Overview / Context
+## Overview
 
-Ensure messages and persisted records retain integrity across ingestion, processing, and storage. This feature defines validation, checksum, and idempotency guarantees for inbound messages and internal state changes.
+Ensure message-level data integrity and validation for protobuf RPC messages handled by Integration Hub. Provide deterministic checksum utilities, schema/field validation, and a pragmatic idempotency mechanism. Deliver test vectors and measurable quality gates for CI.
 
 ## Functional Requirements
 
-- FR-002-01: Validate incoming messages against a canonical schema and reject invalid input.
-- FR-002-02: Compute and persist a message checksum to detect corruption during storage/replication.
-- FR-002-03: Ensure idempotent processing for repeated message deliveries (duplicate detection).
+- FR-002-001: Message validation
+  - The system MUST validate incoming protobuf messages against expected constraints (required fields, non-empty payloads, field-level rules) and reject invalid messages with a `ValidationException`.
+  - Acceptance: `ValidationService.validateProto(Message)` throws `ValidationException` for invalid `EchoRequest` examples; unit tests present under `src/test/java/io/forest/integrationhub/integrity`.
+
+- FR-002-002: Checksum utilities
+  - Provide `ChecksumUtils` implementing SHA-256 hex and CRC32 outputs. Default algorithm: SHA-256; algorithm configurable via `integrationhub.checksum.algorithm` system property.
+  - Acceptance: Known-test vectors in `specs/002-data-integrity/test-vectors/` validate outputs; unit tests verify `sha256Hex("hello")` and `crc32(bytes)`.
+
+- FR-002-003: Idempotency support
+  - Provide an idempotency detection API and an in-memory `IdempotencyStore` implementation with configurable TTL (default 5 minutes). Production deployments SHOULD use Redis or similar persistent store.
+  - Acceptance: duplicate request within TTL MUST return the previously computed result with HTTP 200 and include the header `X-Idempotency-Status: replay`. Tests MUST cover duplicate detection, TTL expiry, and the presence of the `X-Idempotency-Status` header. Implementations MAY provide an alternative behavior (e.g., `409 Conflict`) only via an explicit, documented exception in the PR.
+
+ - FR-002-004: CI Quality Gates
+  - Enforce unit tests, ArchUnit rules and mutation testing for this feature. The feature core classes (package `io.forest.integrationhub.integrity`) SHOULD meet a mutation score of >= 80% as a feature goal.
+  - Acceptance: CI pipeline passes with tests green and Pitest score at-or-above target for feature-core.
+
+  Note: The project constitution mandates a Core module mutation threshold of >= 90%; feature-level goals MUST align with constitution unless a documented exception is granted.
 
 ## Success Criteria
 
-- SC-002-01: Validation layer rejects malformed messages with clear error messages (tests cover invalid cases).
-- SC-002-02: Checksums computed and verified on read/write; corruption detection path covered by tests.
-- SC-002-03: Idempotency behavior proven via integration tests simulating duplicate deliveries.
+- Unit tests for `io.forest.integrationhub.integrity` pass in CI.
+- Test vectors are present in `specs/002-data-integrity/test-vectors/` and used by tests.
+- Pitest mutation score for the feature-core >= 80% (document any justified exceptions in the PR description).
 
 ## User Stories
 
-- As a platform engineer, I want validation to reject malformed inputs so downstream systems remain consistent.
-- As an operator, I want checksums stored so I can detect data corruption after replication.
-- As a developer, I want guaranteed idempotent handling so retries do not create duplicate side-effects.
+- As an Integration Hub operator, I want invalid RPC messages rejected early so downstream systems are not corrupted.
+- As a developer, I want deterministic checksum utilities so I can detect tampering and verify payloads.
+- As an API client, I want idempotent request handling so retries don't cause duplicate side effects.
 
 ## Edge Cases
 
-- Messages missing optional fields but conforming to older schema versions.
-- Partial writes that leave persisted entities in a transient state.
-- High-throughput scenarios where checksum calculation must be performant.
+- Empty or null string fields, very large payloads, unknown/forward-compatible proto fields, and unexpected numeric ranges.
+
+## Mapping to Tasks
+
+- T002-001 → FR-002-001
+- T002-002 → FR-002-001
+- T002-003 → FR-002-002
+- T002-004 → FR-002-003
+- T002-005 → FR-002-004
+

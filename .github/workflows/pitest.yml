@@ -52,3 +52,9 @@ jobs:
         working-directory: 45_IntegrationHub
         run: |
           mvn -B -V -f 45_IntegrationHub/pom.xml -Dcheckstyle.skip=true -Denable.quality.enforcements=true -Dpitest.mutationThreshold=${{ env.PITEST_THRESHOLD }} verify
+      - name: Upload Pitest reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit-reports
+          path: 45_IntegrationHub/target/pit-reports/**

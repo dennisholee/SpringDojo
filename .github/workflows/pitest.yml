@@ -12,6 +12,10 @@ jobs:
   pitest:
     name: Run Pitest
     runs-on: ubuntu-latest
+    env:
+      JAVA_TOOL_OPTIONS: ''
+      MAVEN_OPTS: ''
+      PITEST_THRESHOLD: '90'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,10 +41,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
+      - name: Precheck: Pitest plugin version
+        working-directory: 45_IntegrationHub
+        run: |
+          echo "PITEST threshold=${PITEST_THRESHOLD}"
+          mvn -q -f pom.xml -DskipTests=true help:evaluate -Dexpression=pitest.version -DforceStdout || true
+
       - name: Run Pitest (clean JVM args)
         working-directory: 45_IntegrationHub
-        env:
-          JAVA_TOOL_OPTIONS: ''
-          MAVEN_OPTS: ''
         run: |
-          mvn -B -V -f 45_IntegrationHub/pom.xml -Dcheckstyle.skip=true -Denable.quality.enforcements=true verify
+          mvn -B -V -f 45_IntegrationHub/pom.xml -Dcheckstyle.skip=true -Denable.quality.enforcements=true -Dpitest.mutationThreshold=${{ env.PITEST_THRESHOLD }} verify

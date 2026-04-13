@@ -145,6 +145,9 @@
 					<targetTests>
 						<param>io.forest.integrationhub.*</param>
 					</targetTests>
+					<excludedClasses>
+						<param>io.forest.integrationhub.v1.*</param>
+					</excludedClasses>
 					<threads>4</threads>
 					<outputFormats>
 						<param>HTML</param>

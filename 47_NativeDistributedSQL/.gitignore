@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# Maven build output
+# ---------------------------------------------------------------------------
+target/
+
+# The parent repository's .gitignore ignores *.jar, which would silently
+# exclude a Maven wrapper if one is added later. Re-include it.
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---------------------------------------------------------------------------
+# Test, coverage and PoC reports. These live under target/ for a normal build,
+# but land in the working directory when a suite is launched from an IDE.
+# ---------------------------------------------------------------------------
+*.exec
+surefire-reports/
+failsafe-reports/
+cucumber-reports/
+e2e-metrics/
+poc-reports/
+
+# ---------------------------------------------------------------------------
+# IDE
+# ---------------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+
+# ---------------------------------------------------------------------------
+# Operating system
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Logs and local environment
+# ---------------------------------------------------------------------------
+*.log
+.env

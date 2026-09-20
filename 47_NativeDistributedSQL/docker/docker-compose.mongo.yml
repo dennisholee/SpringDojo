@@ -1,0 +1,57 @@
+# ============================================================================
+# MongoDB side of the migration PoC.
+#
+# Deliberately a SEPARATE file so it composes with any CockroachDB topology:
+#
+#   docker compose -p cdm-e2e \
+#     -f docker/docker-compose.yml \
+#     -f docker/docker-compose.mongo.yml up -d
+#
+# A single-node replica set is used because change streams require one. The member is
+# advertised as localhost so both the host-side application and tools inside the container
+# can resolve it.
+# ============================================================================
+name: cdm-distributed-sql-poc
+
+services:
+
+  mongo:
+    image: mongo:7.0
+    hostname: mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # One-shot bootstrap: turn the standalone mongod into a single-node replica set.
+  mongo-init:
+    image: mongo:7.0
+    hostname: mongo-init
+    depends_on:
+      - mongo
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        echo "[mongo-init] waiting for mongod..."
+        for i in $$(seq 1 90); do
+          if mongosh --host mongo:27017 --quiet --eval 'db.runCommand({ ping: 1 }).ok' >/dev/null 2>&1; then
+            echo "[mongo-init] mongod is up"; break
+          fi
+          sleep 2
+        done
+        echo "[mongo-init] initiating replica set..."
+        mongosh --host mongo:27017 --quiet --eval \
+          'try { rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]}) } catch (e) { print("rs already initiated") }'
+        echo "[mongo-init] waiting for primary..."
+        for i in $$(seq 1 90); do
+          if mongosh --host mongo:27017 --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true; then
+            echo "[mongo-init] replica set ready"; exit 0
+          fi
+          sleep 2
+        done
+        echo "[mongo-init] FATAL: no primary"; exit 1
+
+volumes:
+  mongo-data:

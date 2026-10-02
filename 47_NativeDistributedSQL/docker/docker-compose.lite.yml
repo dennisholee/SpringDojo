@@ -1,0 +1,133 @@
+# ============================================================================
+# LITE two-region CockroachDB cluster for the CDM PoC (four nodes).
+#
+#   region=uk : uk1, uk2
+#   region=hk : hk1, hk2
+#
+# Use this when the canonical six-node topology in docker-compose.yml does not fit the
+# machine. init-db.sql applies unchanged; some ranges will simply be under-replicated,
+# so this file is for a FUNCTIONAL smoke test only - never measure latency on it.
+#
+#   up   : docker compose -f docker/docker-compose.lite.yml up -d
+#   down : docker compose -f docker/docker-compose.lite.yml down -v
+#
+# It uses a different Compose project name but the same host ports as the canonical file,
+# so run one topology at a time.
+# ============================================================================
+name: cdm-distributed-sql-poc-lite
+
+x-crdb: &crdb
+  image: cockroachdb/cockroach:latest-v23.2
+  restart: unless-stopped
+
+services:
+
+  uk1:
+    <<: *crdb
+    hostname: uk1
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=uk1:26257
+      --http-addr=uk1:8080
+      --join=uk1:26257,uk2:26257,hk1:26257,hk2:26257
+      --locality=region=uk,zone=uk-1
+      --cache=128MiB --max-sql-memory=128MiB
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    volumes:
+      - uk1-data:/cockroach/cockroach-data
+
+  uk2:
+    <<: *crdb
+    hostname: uk2
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=uk2:26257
+      --http-addr=uk2:8080
+      --join=uk1:26257,uk2:26257,hk1:26257,hk2:26257
+      --locality=region=uk,zone=uk-2
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - uk2-data:/cockroach/cockroach-data
+
+  hk1:
+    <<: *crdb
+    hostname: hk1
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=hk1:26257
+      --http-addr=hk1:8080
+      --join=uk1:26257,uk2:26257,hk1:26257,hk2:26257
+      --locality=region=hk,zone=hk-1
+      --cache=128MiB --max-sql-memory=128MiB
+    ports:
+      - "26258:26257"
+      - "8081:8080"
+    volumes:
+      - hk1-data:/cockroach/cockroach-data
+
+  hk2:
+    <<: *crdb
+    hostname: hk2
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=hk2:26257
+      --http-addr=hk2:8080
+      --join=uk1:26257,uk2:26257,hk1:26257,hk2:26257
+      --locality=region=hk,zone=hk-2
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - hk2-data:/cockroach/cockroach-data
+
+  # One-shot bootstrap, identical in behaviour to the canonical topology.
+  init:
+    image: cockroachdb/cockroach:latest-v23.2
+    hostname: init
+    depends_on:
+      - uk1
+      - uk2
+      - hk1
+      - hk2
+    volumes:
+      - ./init-db.sql:/scripts/init-db.sql:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        # SQL is unavailable until the cluster is initialised, so initialise first and wait after.
+        echo "[init] initialising the cluster..."
+        ready=0
+        for i in $$(seq 1 90); do
+          if ./cockroach init --insecure --host=uk1:26257 >/dev/null 2>&1; then
+            echo "[init] cluster initialised"; ready=1; break
+          fi
+          if ./cockroach sql --insecure --host=uk1:26257 -e "SELECT 1" >/dev/null 2>&1; then
+            echo "[init] cluster already initialised"; ready=1; break
+          fi
+          sleep 2
+        done
+        if [ "$$ready" -ne 1 ]; then echo "[init] FATAL: cluster could not be initialised"; exit 1; fi
+
+        echo "[init] waiting for all four nodes to be live..."
+        for i in $$(seq 1 90); do
+          up=$$(./cockroach sql --insecure --host=uk1:26257 -e \
+            "SELECT count(*) FROM crdb_internal.gossip_nodes WHERE is_live" 2>/dev/null | tail -n 1 | tr -d ' ')
+          echo "[init] live nodes: $${up:-0}"
+          if [ "$${up:-0}" -ge 4 ]; then break; fi
+          sleep 2
+        done
+
+        echo "[init] applying the geo-partitioned schema..."
+        ./cockroach sql --insecure --host=uk1:26257 -f /scripts/init-db.sql
+        echo "[init] done."
+
+volumes:
+  uk1-data:
+  uk2-data:
+  hk1-data:
+  hk2-data:

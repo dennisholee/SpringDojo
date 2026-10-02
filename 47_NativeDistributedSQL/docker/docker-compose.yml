@@ -1,0 +1,167 @@
+# ============================================================================
+# Two-region CockroachDB cluster for the CDM "Native Distributed SQL" PoC.
+#
+#   region=uk : uk1, uk2, uk3   Core Domains   (party / relationship / contact_point)
+#   region=hk : hk1, hk2, hk3   Market Domain  (product_holding)
+#
+# The cluster is INSECURE, in-memory-data-free but disk-backed on named volumes, and is
+# strictly for local PoC use. Never copy these settings towards production.
+#
+#   up      : docker compose -f docker/docker-compose.yml up -d
+#   watch   : docker compose -f docker/docker-compose.yml logs -f init
+#   down    : docker compose -f docker/docker-compose.yml down -v
+#
+# Size note: six CockroachDB nodes is the smallest topology that can pin replicas in two
+# regions at the default replication factor of 3. If the machine is memory constrained,
+# lower each node's footprint with `--cache=64MiB --max-sql-memory=64MiB`; the dataset in
+# this PoC is tiny.
+# ============================================================================
+name: cdm-distributed-sql-poc
+
+x-crdb: &crdb
+  image: cockroachdb/cockroach:latest-v23.2
+  restart: unless-stopped
+
+services:
+
+  uk1:
+    <<: *crdb
+    hostname: uk1
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=uk1:26257
+      --http-addr=uk1:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=uk,zone=uk-1
+      --cache=128MiB --max-sql-memory=128MiB
+    ports:
+      - "26257:26257"   # SQL endpoint used by the application (UK)
+      - "8080:8080"     # Admin UI
+    volumes:
+      - uk1-data:/cockroach/cockroach-data
+
+  uk2:
+    <<: *crdb
+    hostname: uk2
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=uk2:26257
+      --http-addr=uk2:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=uk,zone=uk-2
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - uk2-data:/cockroach/cockroach-data
+
+  uk3:
+    <<: *crdb
+    hostname: uk3
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=uk3:26257
+      --http-addr=uk3:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=uk,zone=uk-3
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - uk3-data:/cockroach/cockroach-data
+
+  hk1:
+    <<: *crdb
+    hostname: hk1
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=hk1:26257
+      --http-addr=hk1:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=hk,zone=hk-1
+      --cache=128MiB --max-sql-memory=128MiB
+    ports:
+      - "26258:26257"   # SQL endpoint for the HK region
+      - "8081:8080"
+    volumes:
+      - hk1-data:/cockroach/cockroach-data
+
+  hk2:
+    <<: *crdb
+    hostname: hk2
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=hk2:26257
+      --http-addr=hk2:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=hk,zone=hk-2
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - hk2-data:/cockroach/cockroach-data
+
+  hk3:
+    <<: *crdb
+    hostname: hk3
+    command: >
+      start --insecure
+      --store=/cockroach/cockroach-data
+      --listen-addr=hk3:26257
+      --http-addr=hk3:8080
+      --join=uk1:26257,uk2:26257,uk3:26257,hk1:26257,hk2:26257,hk3:26257
+      --locality=region=hk,zone=hk-3
+      --cache=128MiB --max-sql-memory=128MiB
+    volumes:
+      - hk3-data:/cockroach/cockroach-data
+
+  # One-shot bootstrap: initialize the cluster, then apply the geo-partitioned schema.
+  init:
+    image: cockroachdb/cockroach:latest-v23.2
+    hostname: init
+    depends_on:
+      - uk1
+      - uk2
+      - uk3
+      - hk1
+      - hk2
+      - hk3
+    volumes:
+      - ./init-db.sql:/scripts/init-db.sql:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        # SQL is unavailable until the cluster is initialised, so initialise first and wait after.
+        echo "[init] initialising the cluster..."
+        ready=0
+        for i in $$(seq 1 90); do
+          if ./cockroach init --insecure --host=uk1:26257 >/dev/null 2>&1; then
+            echo "[init] cluster initialised"; ready=1; break
+          fi
+          if ./cockroach sql --insecure --host=uk1:26257 -e "SELECT 1" >/dev/null 2>&1; then
+            echo "[init] cluster already initialised"; ready=1; break
+          fi
+          sleep 2
+        done
+        if [ "$$ready" -ne 1 ]; then echo "[init] FATAL: cluster could not be initialised"; exit 1; fi
+
+        echo "[init] waiting for all six nodes to be live..."
+        for i in $$(seq 1 90); do
+          up=$$(./cockroach sql --insecure --host=uk1:26257 -e \
+            "SELECT count(*) FROM crdb_internal.gossip_nodes WHERE is_live" 2>/dev/null | tail -n 1 | tr -d ' ')
+          echo "[init] live nodes: $${up:-0}"
+          if [ "$${up:-0}" -ge 6 ]; then break; fi
+          sleep 2
+        done
+
+        echo "[init] applying the geo-partitioned schema..."
+        ./cockroach sql --insecure --host=uk1:26257 -f /scripts/init-db.sql
+        echo "[init] done."
+
+volumes:
+  uk1-data:
+  uk2-data:
+  uk3-data:
+  hk1-data:
+  hk2-data:
+  hk3-data:

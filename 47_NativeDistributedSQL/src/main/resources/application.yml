@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: cdm-platform-poc
+
+  # The PoC talks to one SQL endpoint of the two-region CockroachDB cluster.
+  # Point CDM_DB_URL at the *local* node for the region whose write path you are measuring.
+  #   UK node : jdbc:postgresql://localhost:26257/cdm?sslmode=disable
+  #   HK node : jdbc:postgresql://localhost:26258/cdm?sslmode=disable
+  datasource:
+    url: ${CDM_DB_URL:jdbc:postgresql://localhost:26257/cdm?sslmode=disable}
+    username: ${CDM_DB_USER:root}
+    password: ${CDM_DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 8
+      pool-name: cdm-pool
+
+  # Schema/region DDL is owned by the cluster bootstrap (docker/init-db.sql), not the application.
+  sql:
+    init:
+      mode: never
+
+  # CockroachDB is SERIALIZABLE by default. Spring's TransactionTemplate leaves isolation at
+  # DEFAULT, so every @Transactional method below runs under strict SERIALIZABLE.
+  jdbc:
+    template:
+      query-timeout: 30s
+
+server:
+  port: 8080
+
+logging:
+  level:
+    io.forest.cdm: INFO
+    org.springframework.jdbc.core: INFO

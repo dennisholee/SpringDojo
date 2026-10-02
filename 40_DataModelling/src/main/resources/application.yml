@@ -1,16 +1,19 @@
 spring:
     main:
-        web-application-type: none
+        web-application-type: servlet
         allow-bean-definition-overriding: true
+    servlet:
+        multipart:
+            max-file-size: 20MB
+            max-request-size: 20MB
     ai:
         openai:
-            # Redirect from api.openai.com to local LM Studio
-            base-url: http://192.168.1.23:1234
-            # LM Studio doesn't require a real key, but Spring AI needs a non-empty string
-            api-key: lm-studio
+            # For Spring AI OpenAI client, keep base URL at service root and let client add API paths.
+            base-url: ${SPRING_AI_OPENAI_BASE_URL:https://openrouter.ai/api}
+            api-key: ${SPRING_AI_OPENAI_API_KEY:}
             chat:
                 options:
-                    model: mistralai/ministral-3-3b # qwen/qwen3-8b
+                    model: ${SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL:openai/gpt-oss-20b:free}
                     max-tokens: 30000
                     temperature: 0
         mcp:
@@ -26,3 +29,33 @@ spring:
                                 - "@modelcontextprotocol/server-filesystem"
                                 # Specify the directories the agent is allowed to access
                                 - "/Users/dennislee/Devs/SpringDojo/41_MultiAgent/src/main/resources/requirements"
+
+app:
+    graph:
+        provider: neo4j
+        prune:
+            require-confirmation: true
+        neo4j:
+            uri: ${NEO4J_URI:bolt://localhost:7687}
+            username: ${NEO4J_USERNAME:neo4j}
+            password: ${NEO4J_PASSWORD:password}
+            database: ${NEO4J_DATABASE:neo4j}
+    import:
+        allowed-extensions:
+            - yaml
+            - yml
+            - json
+        max-files: 10
+    api:
+        version: v1
+        cors:
+            allowed-origins:
+                - ${SPA_ORIGIN:http://localhost:5173}
+    llm:
+        enabled: true
+        deterministic-prealignment-enabled: true
+        provider: openai-compatible
+        confidence-threshold: 0.70
+        max-relationships-per-contract: 25
+        semantic-types-enabled: true
+        concept-alignment-enabled: true

@@ -1,0 +1,40 @@
+# The deployable's configuration.
+#
+# To run it against the real lakehouse (the same stack the e2e suite boots):
+#
+#     docker compose -f docker/docker-compose.iceberg.yml up -d
+#     mvn -pl service -am -DskipTests package
+#     java -jar service/target/ltap-service-0.1.0-SNAPSHOT.jar
+#
+# Each value has an environment placeholder, so a container can be pointed at a lakehouse without
+# rebuilding the jar. The startup is meant to fail if the catalog cannot be reached: an endpoint that
+# accepts a submission it cannot commit would be worse than one that never came up (ADR-009).
+server:
+  port: 8080
+
+ltap:
+  # `iceberg` binds the ports to the persistence adapter; the tests set `in-memory` and supply core's
+  # own harness instead (see InMemoryPersistenceConfiguration).
+  persistence: iceberg
+
+  idempotency:
+    # In-process, deliberately, and recorded as a deferral: a durable record means publishing it in the
+    # same catalog transaction as the party (ADR-009). `in-memory` is the only implementation today.
+    store: in-memory
+
+  catalog:
+    namespace: onboarding
+    uri: ${LTAP_CATALOG_URI:http://localhost:8181}
+    warehouse: ${LTAP_WAREHOUSE_LOCATION:s3://warehouse/}
+    file-io-impl: org.apache.iceberg.aws.s3.S3FileIO
+    s3:
+      endpoint: ${LTAP_S3_ENDPOINT:http://localhost:9000}
+      # MinIO is addressed by path, not by virtual host, and with static credentials: no IAM to reach.
+      path-style-access: true
+      access-key-id: ${LTAP_S3_ACCESS_KEY:minioadmin}
+      secret-access-key: ${LTAP_S3_SECRET_KEY:minioadmin}
+      region: us-east-1
+
+logging:
+  level:
+    io.forest.lakehouse: INFO

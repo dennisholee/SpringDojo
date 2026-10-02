@@ -1,0 +1,30 @@
+name: write-skew-poc
+services:
+  crdb:
+    image: cockroachdb/cockroach:latest-v23.2
+    hostname: crdb
+    command: start-single-node --insecure --store=/cockroach/cockroach-data
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    volumes:
+      - crdb-data:/cockroach/cockroach-data
+
+  crdb-init:
+    image: cockroachdb/cockroach:latest-v23.2
+    depends_on:
+      - crdb
+    volumes:
+      - ./init-cockroach.sql:/scripts/init-cockroach.sql:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        for i in $$(seq 1 90); do
+          ./cockroach sql --insecure --host=crdb:26257 -e "SELECT 1" >/dev/null 2>&1 && break
+          sleep 2
+        done
+        ./cockroach sql --insecure --host=crdb:26257 -f /scripts/init-cockroach.sql
+
+volumes:
+  crdb-data:

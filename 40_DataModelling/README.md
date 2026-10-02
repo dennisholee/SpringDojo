@@ -1,182 +1,181 @@
-# datamodel-demo
+# OpenAPI Knowledge Graph Workbench
 
-This demo shows how to extract a JSON Schema structure from a JSON payload, enhance that schema according to domain requirements, and produce a merged schema that contains both the original (old) attributes and the newly introduced attributes.
+This project is now an API-first backend and separate SPA workbench for OpenAPI contract lifecycle operations:
 
-Summary
+- upload and import OpenAPI contracts into a knowledge graph
+- update graph data through idempotent merge re-imports
+- preview and execute hard prune operations
+- support both `in-memory` and `neo4j` graph providers behind the same service boundary
 
-- Extract: infer a JSON Schema structure from a concrete JSON payload or from a POJO that models the payload.
-- Enhance: apply domain-driven changes (for example: normalize an address into a separate model, add foreign-key references, add required/format constraints, or map to an existing standard).
-- Merge: produce a final JSON Schema that combines the original attributes and the new attributes introduced by the enhancement rules.
+## Current Architecture
 
-Why this repository
+- Backend: Spring Boot 4 (`/api/v1/*` endpoints)
+- Graph service façade: delegates to pluggable `KnowledgeGraphStore` implementations
+- Providers:
+  - `in-memory`
+  - `neo4j` (default)
+- Frontend: standalone SPA in [frontend](frontend)
 
-The generator used in this project produces schema from Java types (Classes) or by inspecting example payloads. The typical flow for deriving a schema that reflects actual runtime data is:
+## API Surface (v1)
 
-1. Deserialize your JSON payload into a POJO that matches the payload structure (or use a payload-based inference routine).
-2. Generate a schema for the POJO type using the victools jsonschema-generator (or infer a schema directly from the payload with the provided helper).
-3. Apply enhancements according to your requirements (for example, replace an address object with a reference to an ISO-standard address model, or add computed fields).
-4. Merge the original schema and the enhancements into a final (combined) schema that includes both old and new attributes.
+- `POST /api/v1/import` - multipart file upload import
+- `POST /api/v1/update` - multipart file upload update/merge
+- `GET /api/v1/contracts` - list imported contracts
+- `GET /api/v1/prune/{apiId}/preview` - prune impact preview
+- `DELETE /api/v1/prune/{apiId}?confirm=true` - hard prune commit
+- `GET /api/v1/system/status` - runtime status (provider/version/count)
+- `GET /api/v1/analysis/lineage` - structural service -> endpoint -> request/response -> schema mapping
+- `GET /api/v1/analysis/lineage.csv` - CSV export for structural mapping
+- `GET /api/v1/analysis/collisions` - duplicate operationId and method+path collision report
 
-Result format
+Detailed request and response payloads are documented in [wiki/api-contract.md](wiki/api-contract.md).
 
-The produced schema is a JSON object following JSON Schema conventions (this project uses Draft 2020-12 by default for victools). The "combined" result will typically contain:
+## OpenAPI Analysis Workflow
 
-- The original `properties` the payload had (old attributes)
-- New `properties` introduced by the enhancement rules (new attributes)
-- Adjusted `required` and `format` arrays reflecting both old and new attributes
-- Where appropriate, references (`$ref`) to external models (for normalization) or inline subschemas
-
-Simple example (conceptual)
-
-Given this payload:
-
-```json
-{
-  "userId": "u12345",
-  "email": "john.doe@example.com",
-  "age": 29
-}
-```
-
-A requirement may request that `address` be normalized and instead of embedding a full address object, the final schema should reference an external `Address` model and provide a foreign key such as `addressId`.
-
-- Old schema (derived from payload):
-
-```json
-{
-  "$schema" : "http://json-schema.org/draft-07/schema#",
-  "title" : "UserProfile",
-  "description" : "A schema for a user profile",
-  "type" : "object",
-  "properties" : {
-    "userId" : {
-      "type" : "string"
-    },
-    "email" : {
-      "type" : "string",
-      "format" : "email"
-    },
-    "age" : {
-      "type" : "integer"
-    }
-  },
-  "required" : [ "userId", "email", "age" ]
-}
-```
-
-- Enhancement (requirement): normalize `address` into a separate `Address` model and add `addressId` as a foreign key (one-to-one relationship).
-- Combined (final) schema (conceptual):
-
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "UserProfileWithAddress",
-  "type": "object",
-  "properties": {
-    "userId": {"type": "string"},
-    "email": {"type": "string", "format": "email"},
-    "age": {"type": "integer"},
-    "addresses": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Address"
-      }
-    },
-    "primaryAddressId": {
-      "type": "string",
-      "description": "ISO 20022-compliant address ID as foreign key to the Address object"
-    }
-  },
-  "required": ["userId", "email", "age"],
-  "definitions": {
-    "Address": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ISO20022_Address",
-      "type": "object",
-      "properties": {
-        "addressId": {"type": "string", "format": "uuid"},
-        "street": {"type": "string"},
-        "city": {"type": "string"},
-        "postalCode": {"type": "string"},
-        "country": {"type": "string"},
-        "category": {"enum": ["home", "work", "personal"]},
-        "isPrimary": {"type": "boolean"}
-      },
-      "required": ["addressId", "street", "city", "postalCode", "country"]
-    }
-  }
-}
-```
-
-- Sample payload based on the new schema
-
-```json
-{
-  "userId": "USR12345",
-  "email": "john.doe@example.com",
-  "age": 30,
-  "addresses": [
-    {
-      "$ref": "#/definitions/Address",
-      "addressId": "ADDR67890-ISO20022",
-      "street": "123 Main St",
-      "city": "New York",
-      "postalCode": "10001",
-      "country": "US",
-      "category": "home"
-    }
-  ],
-  "primaryAddressId": "ADDR67890-ISO20022"
-}
-```
-
-Note: the combined schema keeps the original `address` object (if needed for backward compatibility) and also introduces `addressId`. Depending on your migration strategy you may decide to remove the embedded object or mark it as deprecated.
-
-How to use the project
-
-1. Generate a schema for a POJO type
-
-- Create a POJO representing your payload (for example `Payload.java`).
-- Use `SchemaGenerator.generateSchema(Payload.class)` to create a Jackson `ObjectNode` that represents the schema.
-
-2. Derive schema directly from a payload (inference helper)
-
-- Use the included helper `JsonToSchemaGenerator.generateSchema(jsonString, title, description)` to infer a schema directly from an example JSON payload.
-- This helper is conservative and infers basic types and nested structures from the sample.
-
-3. Apply domain enhancements
-
-- Implement rule logic (a small transformation function) that takes the derived schema and returns an "enhancement" schema or operations (for example, add a `addressId` property or replace `address` with a `$ref`).
-- A simple rule can be: "if property `address` exists, add property `addressId` with type `string` and description referencing the external model." 
-
-4. Merge original + enhancement
-
-- Merge `properties` and update the `required` list as necessary. Keep backward compatibility by retaining old attributes unless you intentionally remove them.
-
-Quick commands (macOS / zsh)
-
-- Build the project (requires Maven installed):
+1) Lint contracts before import:
 
 ```bash
+npx -y @redocly/cli lint wiki/openapi/*.yaml
+```
+
+2) Import contracts (example):
+
+```bash
+curl -s -X POST "http://localhost:8080/api/v1/import" \
+  -F "files=@wiki/openapi/3-3-4-consent-and-privacy-service.yaml" \
+  -F "files=@wiki/openapi/3-4-2-retention-and-deletion-service.yaml"
+```
+
+3) Retrieve structural lineage mapping:
+
+```bash
+curl -s "http://localhost:8080/api/v1/analysis/lineage"
+```
+
+4) Retrieve collision report:
+
+```bash
+curl -s "http://localhost:8080/api/v1/analysis/collisions"
+```
+
+5) Export lineage as CSV:
+
+```bash
+curl -s "http://localhost:8080/api/v1/analysis/lineage.csv" -o lineage.csv
+```
+
+## Run Backend
+
+```bash
+mvn spring-boot:run
+```
+
+## Build And Test
+
+```bash
+mvn test
 mvn -DskipTests package
 ```
 
-- Run the example application:
+## Start Dependent Services (Docker Compose)
+
+From the repo root:
 
 ```bash
-mvn -DskipTests exec:java -Dexec.mainClass="io.forest.datamodel.Application"
+docker compose up -d
 ```
 
-Notes and recommendations
+This starts Neo4j on:
 
-- If you want a robust inference across many samples, collect multiple payload examples, infer schemas for each, then merge or generalize (this demo only provides a single-sample inference helper).
-- Decide a migration strategy: keep old attributes for backward compatibility, or mark them as deprecated/removed in the combined schema depending on your consumers.
-- The project contains `JsonToSchemaGenerator` (payload inference helper) and `Application` (victools-based type schema generation). Use whichever approach best fits your pipeline.
+- HTTP browser: `http://localhost:7474`
+- Bolt: `bolt://localhost:7687`
 
-Files of interest
+Credentials:
 
-- `src/main/java/io/forest/datamodel/JsonToSchemaGenerator.java` — infer schema from a JSON payload
-- `src/main/java/io/forest/datamodel/Application.java` — example using victools to generate schema from a Java type
-- `src/main/java/io/forest/datamodel/Pipeline.java` — example runner that demonstrates generating a schema and piping it into an AI prompt for enrichment
+- username: `neo4j`
+- password: `password`
 
-If you want me to include a small example rule implementation that performs a specific enhancement (for example: transform `address` into an `addressId` and add a `$ref` to an external schema), tell me the exact rule and I will add it to the project.
+To run the backend against Neo4j:
+
+```bash
+export NEO4J_URI=bolt://localhost:7687
+export NEO4J_USERNAME=neo4j
+export NEO4J_PASSWORD=password
+export NEO4J_DATABASE=neo4j
+mvn spring-boot:run -Dspring-boot.run.arguments="--app.graph.provider=neo4j"
+```
+
+To use an externally hosted LLM service (OpenAI-compatible endpoint), set:
+
+```bash
+export SPRING_AI_OPENAI_BASE_URL=https://your-llm-host.example.com/v1
+export SPRING_AI_OPENAI_API_KEY=your-api-key
+export SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL=your-model-id
+```
+
+## Run SPA
+
+From the repo root:
+
+```bash
+cd frontend
+python3 -m http.server 5173
+```
+
+Open `http://localhost:5173/index.html`.
+
+By default, the SPA targets `http://localhost:8080/api/v1`.
+
+## Configuration
+
+Main settings are in [src/main/resources/application.yml](src/main/resources/application.yml):
+
+- `app.graph.provider`: `in-memory` or `neo4j`
+- `app.graph.neo4j.*`: Neo4j connection settings
+- `app.llm.enabled`: `false` for standalone mode, `true` to enable enrichment
+- `app.llm.provider`: `noop` (standalone) or `openai-compatible` (hosted LLM)
+- `app.api.cors.allowed-origins`: comma-separated SPA origins
+- `spring.servlet.multipart.*`: upload limits
+
+### Operating Modes
+
+Standalone mode (default):
+
+```bash
+export APP_LLM_ENABLED=false
+export APP_LLM_PROVIDER=noop
+```
+
+LLM-enabled mode (externally hosted OpenAI-compatible endpoint):
+
+```bash
+export APP_LLM_ENABLED=true
+export APP_LLM_PROVIDER=openai-compatible
+export SPRING_AI_OPENAI_BASE_URL=https://your-llm-host.example.com/v1
+export SPRING_AI_OPENAI_API_KEY=your-api-key
+export SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL=your-model-id
+```
+
+Example Neo4j runtime:
+
+```bash
+export NEO4J_URI=bolt://localhost:7687
+export NEO4J_USERNAME=neo4j
+export NEO4J_PASSWORD=password
+export NEO4J_DATABASE=neo4j
+```
+
+Then set `app.graph.provider=neo4j` in config or external property overrides.
+
+## Key Backend Files
+
+- [src/main/java/io/forest/datamodel/api/ContractController.java](src/main/java/io/forest/datamodel/api/ContractController.java)
+- [src/main/java/io/forest/datamodel/api/PruneController.java](src/main/java/io/forest/datamodel/api/PruneController.java)
+- [src/main/java/io/forest/datamodel/api/SystemController.java](src/main/java/io/forest/datamodel/api/SystemController.java)
+- [src/main/java/io/forest/datamodel/service/KnowledgeGraphService.java](src/main/java/io/forest/datamodel/service/KnowledgeGraphService.java)
+- [src/main/java/io/forest/datamodel/service/InMemoryKnowledgeGraphStore.java](src/main/java/io/forest/datamodel/service/InMemoryKnowledgeGraphStore.java)
+- [src/main/java/io/forest/datamodel/service/Neo4jKnowledgeGraphStore.java](src/main/java/io/forest/datamodel/service/Neo4jKnowledgeGraphStore.java)
+
+## Decisions
+
+Architecture and rollout decisions are tracked in [wiki/decisions](wiki/decisions).

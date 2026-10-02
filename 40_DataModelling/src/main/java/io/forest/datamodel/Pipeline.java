@@ -3,6 +3,7 @@ package io.forest.datamodel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +16,7 @@ import static io.forest.datamodel.JsonToSchemaGenerator.generateSchema;
  */
 @SuppressWarnings("unused")
 @Configuration
+@Profile("demo-ai")
 public class Pipeline {
 
     /**

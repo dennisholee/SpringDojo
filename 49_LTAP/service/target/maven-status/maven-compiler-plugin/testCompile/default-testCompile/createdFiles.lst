@@ -1,0 +1,5 @@
+io/forest/lakehouse/service/InMemoryPersistenceConfiguration.class
+io/forest/lakehouse/service/ServiceModuleStructureTest.class
+io/forest/lakehouse/service/onboarding/FailureMappingTest.class
+io/forest/lakehouse/service/onboarding/OnboardingSubmissionApiTest.class
+io/forest/lakehouse/service/onboarding/IdempotencyStoreTest.class

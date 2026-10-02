@@ -1,0 +1,33 @@
+name: write-skew-poc
+services:
+  mongo:
+    image: mongo:7.0
+    hostname: mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      - mongo
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        for i in $$(seq 1 90); do
+          mongosh --host mongo:27017 --quiet --eval 'db.runCommand({ ping: 1 }).ok' >/dev/null 2>&1 && break
+          sleep 2
+        done
+        mongosh --host mongo:27017 --quiet --eval \
+          'try { rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]}) } catch (e) { print("rs already initiated") }'
+        for i in $$(seq 1 90); do
+          mongosh --host mongo:27017 --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true && exit 0
+          sleep 2
+        done
+        exit 1
+
+volumes:
+  mongo-data:
